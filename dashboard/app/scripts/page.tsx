@@ -162,7 +162,7 @@ export default async function ScriptsPage() {
           ) : scripts.map(s => (
             <div key={s.id} className="p-6 flex flex-col md:flex-row gap-5 items-start hover:bg-[#0c0c0c] transition-colors group">
               <div className="w-14 h-14 rounded-xl bg-black border border-[#222] overflow-hidden flex-shrink-0 relative shadow-md">
-                <img src={`https://thumbnails.roblox.com/v1/games/icons?universeIds=${s.game.universeId.toString()}&size=128x128&format=Png`} alt="" className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500" onError={(e)=>((e.target as HTMLImageElement).style.display='none')} />
+                <img src={`https://thumbnails.roblox.com/v1/games/icons?universeIds=${s.game.universeId.toString()}&size=128x128&format=Png`} alt="" className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500" />
                 <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
               </div>
               

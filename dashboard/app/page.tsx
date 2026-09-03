@@ -123,8 +123,8 @@ export default async function Dashboard() {
             ))}
           </div>
           {byGame.length > 0 && (
-            <Link href="/games" className="mt-6 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors py-3 border border-white/10 rounded-xl hover:bg-white/5">
-              View All Games
+            <Link href="/scripts" className="mt-6 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors py-3 border border-white/10 rounded-xl hover:bg-white/5">
+              Manage Scripts
               <ArrowRight className="w-4 h-4" />
             </Link>
           )}

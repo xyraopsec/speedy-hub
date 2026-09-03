@@ -24,7 +24,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="p-4 space-y-1.5 text-sm flex-1">
               {[
                 ["Dashboard", "/"],
-                ["Games (20)", "/games"],
                 ["Scripts", "/scripts"],
                 ["Executions", "/executions"],
                 ["API Keys", "/keys"],
