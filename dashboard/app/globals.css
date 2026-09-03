@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Black & White - Vercel monochrome system - color = meaning */
+:root {
+  --bg: 0 0% 3%; /* #08080A */
+  --bg-soft: 0 0% 7%; /* #111113 */
+  --bg-card: 0 0% 10%; /* #1A1A1E */
+  --border: 0 0% 14%; /* #242428 */
+  --text: 0 0% 98%;
+  --muted: 0 0% 62%;
+  --red: 0 100% 56%; /* Speedy #FF1A1A - semantic only */
+}
+
+* { border-color: hsl(var(--border)); }
+body { background: hsl(var(--bg)); color: hsl(var(--text)); font-feature-settings: "tnum" 1; }
+.mono { font-variant-numeric: tabular-nums; }
+.card { background: hsl(var(--bg-soft)); border: 1px solid hsl(var(--border)); border-radius: 16px; }
+.btn-primary { background: hsl(var(--red)); color: white; border-radius: 10px; }
+.btn-primary:hover { background: hsl(0 100% 52%); }
+.gridline { stroke: hsl(var(--border) / 0.6); }

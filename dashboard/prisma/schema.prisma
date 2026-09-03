@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+model Game {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  universeId  BigInt   @unique
+  placeId     BigInt   @unique
+  thumb       String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  scripts     Script[]
+  executions  Execution[]
+  createdAt   DateTime @default(now())
+}
+model Script {
+  id              String   @id @default(cuid())
+  gameId          String
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name            String
+  version         String   @default("1.0.0")
+  code            String   @db.Text
+  isActive        Boolean  @default(true)
+  executionsCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  executions      Execution[]
+  @@index([gameId, isActive])
+}
+model Execution {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id])
+  scriptId  String?
+  script    Script?  @relation(fields: [scriptId], references: [id])
+  placeId   BigInt?
+  userId    String?
+  username  String?
+  executor  String?
+  ip        String?
+  country   String?
+  success   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  @@index([gameId, createdAt])
+  @@index([createdAt])
+}
+model ApiKey {
+  id        String   @id @default(cuid())
+  name      String
+  key       String   @unique
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+}
