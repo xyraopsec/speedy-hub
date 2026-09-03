@@ -6,40 +6,57 @@ export const dynamic = "force-dynamic";
 
 async function createScript(formData: FormData) {
   "use server";
-  const universeId = String(formData.get("universeId") || "").trim();
-  const name = String(formData.get("name") || "").trim();
-  const version = String(formData.get("version") || "1.0.0").trim();
-  const code = String(formData.get("code") || "").trim();
-  
-  if (!universeId || !code) return;
-  
-  // ensure game exists (auto-create if missing)
-  let game = await prisma.game.findUnique({ where: { universeId: BigInt(universeId) } });
-  if (!game) {
-    const placeId = String(formData.get("placeId") || universeId).trim();
-    // Default name if none provided for a new game
-    const gameName = name || `Universe ${universeId.slice(0, 8)}`;
-    game = await prisma.game.create({ 
+  try {
+    const universeIdStr = String(formData.get("universeId") || "").trim();
+    const name = String(formData.get("name") || "").trim();
+    const version = String(formData.get("version") || "1.0.0").trim();
+    const code = String(formData.get("code") || "").trim();
+    
+    if (!universeIdStr || !code) return;
+    
+    let universeId: bigint;
+    try {
+      universeId = BigInt(universeIdStr);
+    } catch {
+      return; // Invalid number
+    }
+    
+    // ensure game exists (auto-create if missing)
+    let game = await prisma.game.findUnique({ where: { universeId } });
+    if (!game) {
+      let placeIdStr = String(formData.get("placeId") || universeIdStr).trim();
+      let placeId: bigint;
+      try {
+        placeId = BigInt(placeIdStr);
+      } catch {
+        placeId = universeId; // fallback
+      }
+      // Default name if none provided for a new game
+      const gameName = name || `Universe ${universeIdStr.slice(0, 8)}`;
+      game = await prisma.game.create({ 
+        data: { 
+          name: gameName, 
+          universeId, 
+          placeId, 
+          order: 99 
+        } 
+      });
+    }
+    
+    await prisma.script.create({ 
       data: { 
-        name: gameName, 
-        universeId: BigInt(universeId), 
-        placeId: BigInt(placeId), 
-        order: 99 
+        gameId: game.id, 
+        name: name || game.name, 
+        version, 
+        code 
       } 
     });
+    
+    revalidatePath("/scripts");
+    revalidatePath("/games");
+  } catch (error) {
+    console.error("Failed to create script:", error);
   }
-  
-  await prisma.script.create({ 
-    data: { 
-      gameId: game.id, 
-      name: name || game.name, 
-      version, 
-      code 
-    } 
-  });
-  
-  revalidatePath("/scripts");
-  revalidatePath("/games");
 }
 
 export default async function ScriptsPage() {

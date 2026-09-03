@@ -37,5 +37,5 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const take = Math.min(100, parseInt(req.nextUrl.searchParams.get("take") || "50"));
   const rows = await prisma.execution.findMany({ orderBy: { createdAt: "desc" }, take, include: { game: true } });
-  return NextResponse.json(rows.map(r => ({ ...r, placeId: r.placeId?.toString(), game: { ...r.game, universeId: r.game.universeId.toString(), placeId: r.game.placeId.toString() } })));
+  return NextResponse.json(rows.map((r: any) => ({ ...r, placeId: r.placeId?.toString(), game: { ...r.game, universeId: r.game.universeId.toString(), placeId: r.game.placeId.toString() } })));
 }
