@@ -5,6 +5,7 @@ local Lighting = game:GetService("Lighting")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 getgenv().SpeedyConfig = { Version = "v3.8", Discord = "discord.gg/speedy" }
+getgenv().SpeedyBackend = "https://dashboard-ten-peach-19.vercel.app" -- clean backend, no Loader.lua edits needed
 
 local Games = {
     { Name = "Driving Empire",           GameId = 1202096104, PlaceId = 3357602286,  Thumb = "rbxthumb://type=GameThumbnail&id=3357602286&w=768&h=432" },
@@ -192,8 +193,37 @@ local function createCard(data,i)
         TweenService:Create(Blur,TweenInfo.new(0.42),{Size=0}):Play()
         task.wait(0.42)
         Phase2.Visible=false ScreenGui:Destroy() Blur:Destroy()
-        pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub",Text="Loading "..data.Name.." • smooth",Duration=3}) end)
-        print("[Speedy] Smooth load "..data.Name)
+        -- backend: log execution + fetch script (you never touch Loader.lua)
+        local backend = getgenv().SpeedyBackend or "https://dashboard-ten-peach-19.vercel.app"
+        local HttpService = game:GetService("HttpService")
+        local plr = game.Players.LocalPlayer
+        -- log execution (fire and forget)
+        pcall(function()
+            local body = HttpService:JSONEncode({ universeId=tostring(data.GameId), placeId=tostring(data.PlaceId), userId=tostring(plr.UserId), username=plr.Name })
+            local req = (syn and syn.request) or (http and http.request) or request
+            if req then
+                req({ Url=backend.."/api/executions", Method="POST", Headers={["Content-Type"]="application/json"}, Body=body })
+            else
+                -- fallback: HttpService can't POST easily, use HttpGet via log pixel
+                pcall(function() game:HttpGet(backend.."/api/executions?universeId="..data.GameId.."&placeId="..data.PlaceId.."&userId="..plr.UserId) end)
+            end
+        end)
+        -- fetch & run script for this game
+        local fetched=false
+        pcall(function()
+            local url = backend.."/api/scripts?universeId="..tostring(data.GameId)
+            local res = game:HttpGet(url)
+            local dataJ = HttpService:JSONDecode(res)
+            if dataJ and dataJ.code and #dataJ.code>10 then
+                fetched=true
+                pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub", Text="Loaded "..data.Name.." v"..(dataJ.version or "?"), Duration=3}) end)
+                loadstring(dataJ.code)()
+            end
+        end)
+        if not fetched then
+            pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub",Text="No script yet for "..data.Name.." — add in dashboard /scripts",Duration=4}) end)
+            print("[Speedy] No backend script for "..data.Name.." ("..data.GameId..") — add at "..backend.."/scripts?game="..data.Name)
+        end
     end)
     return Card
 end
