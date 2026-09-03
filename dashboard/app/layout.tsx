@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-export const metadata = { title: "Speedy Hub — Dashboard", description: "Manage 20 car & moto scripts, track executions" };
+export const metadata = { title: "Speedy Hub — Dashboard", description: "Manage 20 car & moto scripts, track executions", icons: { icon: "/favicon.svg" } };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
