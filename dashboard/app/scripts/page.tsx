@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { Terminal, UploadCloud, FileCode2, History } from "lucide-react";
+import { Terminal, UploadCloud, FileCode2, History, Activity } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
