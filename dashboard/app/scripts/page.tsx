@@ -25,10 +25,11 @@ async function createScript(formData: FormData) {
   revalidatePath("/games");
 }
 
-export default async function ScriptsPage({ searchParams }: { searchParams: { game?: string } }) {
+export default async function ScriptsPage({ searchParams }: { searchParams: Promise<{ game?: string }> }) {
   const games = await getGames();
   const scripts = await prisma.script.findMany({ include: { game: true }, orderBy: { updatedAt: "desc" }, take: 50 }).catch(() => []);
-  const preselect = searchParams?.game ? games.find(g => g.name === searchParams.game)?.universeId.toString() || "" : "";
+  const sp = await searchParams;
+  const preselect = sp?.game ? games.find(g => g.name === sp.game)?.universeId.toString() || "" : "";
 
   return (
     <div className="space-y-8">
