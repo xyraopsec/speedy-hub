@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { Terminal, UploadCloud, FileCode2, History, Activity } from "lucide-react";
+import { Terminal, UploadCloud, FileCode2, History } from "lucide-react";
+import ScriptCard from "@/components/ScriptCard";
 
 export const dynamic = "force-dynamic";
 
@@ -15,52 +16,30 @@ async function createScript(formData: FormData) {
     if (!universeIdStr || !code) return;
     
     let universeId: bigint;
-    try {
-      universeId = BigInt(universeIdStr);
-    } catch {
-      return; // Invalid number
-    }
+    try { universeId = BigInt(universeIdStr); } catch { return; }
     
-    // ensure game exists (auto-create if missing)
     let game = await prisma.game.findUnique({ where: { universeId } });
     if (!game) {
       let placeIdStr = String(formData.get("placeId") || universeIdStr).trim();
       let placeId: bigint;
-      try {
-        placeId = BigInt(placeIdStr);
-      } catch {
-        placeId = universeId; // fallback
-      }
-      // Default name if none provided for a new game
+      try { placeId = BigInt(placeIdStr); } catch { placeId = universeId; }
       const gameName = name || `Universe ${universeIdStr.slice(0, 8)}`;
-      game = await prisma.game.create({ 
-        data: { 
-          name: gameName, 
-          universeId, 
-          placeId, 
-          order: 99 
-        } 
-      });
+      game = await prisma.game.create({ data: { name: gameName, universeId, placeId, order: 99 } });
     }
     
-    await prisma.script.create({ 
-      data: { 
-        gameId: game.id, 
-        name: name || game.name, 
-        version, 
-        code 
-      } 
-    });
-    
+    await prisma.script.create({ data: { gameId: game.id, name: name || game.name, version, code } });
     revalidatePath("/scripts");
-    revalidatePath("/games");
   } catch (error) {
     console.error("Failed to create script:", error);
   }
 }
 
 export default async function ScriptsPage() {
-  const scripts = await prisma.script.findMany({ include: { game: true }, orderBy: { updatedAt: "desc" }, take: 50 }).catch(() => []);
+  const scripts = await prisma.script.findMany({
+    include: { game: true },
+    orderBy: { updatedAt: "desc" },
+    take: 50,
+  }).catch(() => []);
 
   return (
     <div className="space-y-10 animate-fade-in">
@@ -68,7 +47,7 @@ export default async function ScriptsPage() {
         <h1 className="text-4xl font-black tracking-tighter text-white">Scripts</h1>
         <p className="text-sm text-white/50 mt-2 flex items-center gap-2">
           <Terminal className="w-4 h-4 text-white/30" />
-          Deploy and manage versioned Lua payloads without touching the loader.
+          Deploy, edit, and manage versioned Lua payloads from one place.
         </p>
       </div>
 
@@ -91,11 +70,6 @@ export default async function ScriptsPage() {
               required 
               placeholder="e.g. 1202096104" 
               className="w-full bg-black border border-[#222] hover:border-[#444] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-white transition-colors mono" 
-            />
-            <input 
-              name="placeId" 
-              placeholder="Place ID (optional fallback)" 
-              className="w-full bg-black border border-[#222] hover:border-[#444] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white transition-colors mono mt-2 hidden" 
             />
           </label>
           
@@ -145,7 +119,7 @@ export default async function ScriptsPage() {
         <div className="px-6 py-5 border-b border-[#1a1a1a] flex items-center justify-between bg-[#0a0a0a]">
           <h2 className="font-bold text-white tracking-tight flex items-center gap-2">
             <History className="w-4 h-4 text-white/50" />
-            Deployment History
+            Deployed Scripts
           </h2>
           <span className="text-[10px] font-bold tracking-widest uppercase mono text-white/40">{scripts.length} Records</span>
         </div>
@@ -160,46 +134,7 @@ export default async function ScriptsPage() {
                 <div className="text-xs text-white/40 mt-1 max-w-xs">Use the form above to deploy your first Lua payload to a universe.</div>
              </div>
           ) : scripts.map(s => (
-            <div key={s.id} className="p-6 flex flex-col md:flex-row gap-5 items-start hover:bg-[#0c0c0c] transition-colors group">
-              <div className="w-14 h-14 rounded-xl bg-black border border-[#222] overflow-hidden flex-shrink-0 relative shadow-md">
-                <img src={`https://thumbnails.roblox.com/v1/games/icons?universeIds=${s.game.universeId.toString()}&size=128x128&format=Png`} alt="" className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500" />
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-3 mb-1.5">
-                  <span className="font-black text-lg text-white tracking-tight">{s.game.name}</span>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-[#1a1a1a] text-white/70 mono border border-[#222]">
-                    v{s.version}
-                  </div>
-                  <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${s.isActive ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]" : "bg-transparent text-white/30 border-[#222]"}`}>
-                    {s.isActive && <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />}
-                    {s.isActive ? "Active" : "Archived"}
-                  </div>
-                </div>
-                
-                <div className="text-[11px] text-white/40 flex items-center gap-3 mb-4 font-medium uppercase tracking-wider">
-                  <span className="mono">ID: {s.game.universeId.toString()}</span>
-                  <span className="text-[#333]">•</span>
-                  <span>{new Date(s.updatedAt).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
-                </div>
-                
-                <div className="relative rounded-lg border border-[#222] bg-[#050505] overflow-hidden group-hover:border-[#333] transition-colors">
-                  <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-[#111] to-transparent pointer-events-none z-10" />
-                  <pre className="p-5 text-xs font-mono text-white/50 overflow-auto max-h-[160px] custom-scrollbar leading-relaxed">
-                    {s.code}
-                  </pre>
-                </div>
-              </div>
-              
-              <div className="text-right md:w-32 shrink-0 flex flex-col items-end gap-1 pt-1">
-                <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  <Activity className="w-3 h-3" />
-                  Executions
-                </span>
-                <span className="text-2xl font-black mono text-white group-hover:scale-105 transition-transform origin-right drop-shadow-md">{s.executionsCount.toLocaleString()}</span>
-              </div>
-            </div>
+            <ScriptCard key={s.id} script={JSON.parse(JSON.stringify(s, (key, value) => typeof value === "bigint" ? value.toString() : value))} />
           ))}
         </div>
       </div>
