@@ -1,5 +1,5 @@
 --[[ ============================================================
-  SPEEDY UI  v1.1  |  macOS glass interface library for Speedy Hub
+  SPEEDY UI  v1.2  |  macOS glass interface library for Speedy Hub
   Single-file, loadstring-ready. No dependencies.
 
   Usage:
@@ -19,8 +19,8 @@
   ============================================================ ]]
 
 local SpeedyUI = {}
-SpeedyUI.Version = "1.1"
-print("[SpeedyUI] v1.1 loaded — glass shell, scrim rows, zero blur")
+SpeedyUI.Version = "1.2"
+print("[SpeedyUI] v1.2 loaded — glass shell, scrim rows, zero blur")
 
 -- Services ----------------------------------------------------
 local TweenService = game:GetService("TweenService")
@@ -153,6 +153,17 @@ function SpeedyUI:CreateWindow(opts)
   for _, v in ipairs(Lighting:GetChildren()) do
     if v.Name == "SpeedyUIBlur" or v.Name == "SpeedyBlur" then v:Destroy() end
   end
+  -- Loader handoff: a minimized/forgotten loader leaves its dark dim + blur
+  -- running with no visible window. If it is still around, take it down so
+  -- the game is bright again behind our UI.
+  pcall(function()
+    local pg = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 3)
+    local stale = pg and pg:FindFirstChild("SpeedyLoader")
+    if stale then
+      stale:Destroy()
+      print("[SpeedyUI] removed stale SpeedyLoader (dim + blur cleaned)")
+    end
+  end)
 
   local gui = New("ScreenGui", {
     Name = "SpeedyUI", ResetOnSpawn = false, IgnoreGuiInset = true,
@@ -222,7 +233,7 @@ function SpeedyUI:CreateWindow(opts)
     AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.fromScale(0.5, 0),
     Size = UDim2.fromOffset(300, 44), BackgroundTransparency = 1,
   }, bar)
-  local t1 = label(titleWrap, title, 15, Enum.Font.GothamBlack, 0, Enum.TextXAlignment.Center)
+  local t1 = label(titleWrap, title, 17, Enum.Font.GothamBlack, 0, Enum.TextXAlignment.Center)
   t1.Size = UDim2.new(1, 0, 0, 20); t1.Position = UDim2.fromOffset(0, 6)
   local t2 = label(titleWrap, sub, 10, Enum.Font.GothamMedium, 0.3, Enum.TextXAlignment.Center)
   t2.Size = UDim2.new(1, 0, 0, 13); t2.Position = UDim2.fromOffset(0, 27)

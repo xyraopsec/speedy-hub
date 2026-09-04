@@ -1,6 +1,8 @@
 --[[ SPEEDY UI | Example — copy this shape for every game script ]]
+-- ?v= cache buster: bump this every time SpeedyUI.lua changes, so the
+-- executor never serves a stale cached copy of the library.
 local SpeedyUI = loadstring(game:HttpGet(
-  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/SpeedyUI.lua"
+  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/SpeedyUI.lua?v=1.2"
 ))()
 
 local Window = SpeedyUI:CreateWindow({
