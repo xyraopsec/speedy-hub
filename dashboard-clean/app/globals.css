@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/* Premium Black & White Design System */
+:root {
+  --bg: 0 0% 0%; /* Pure Black */
+  --bg-soft: 0 0% 4%; /* Near Black */
+  --bg-card: 0 0% 7%; /* Dark Gray */
+  --border: 0 0% 12%; /* Subtle Gray Border */
+  --border-hover: 0 0% 25%; /* Lighter border on hover */
+  --text: 0 0% 100%; /* Pure White */
+  --muted: 0 0% 55%; /* Medium Gray */
+  --muted-soft: 0 0% 35%; /* Darker Gray */
+}
+
+* { border-color: hsl(var(--border)); }
+body { 
+  background: hsl(var(--bg)); 
+  color: hsl(var(--text)); 
+  font-feature-settings: "tnum" 1; 
+}
+
+/* Tabular numbers + mono font */
+.mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--border-hover)); }
+
+/* Components */
+.card { 
+  background: hsl(var(--bg-card)); 
+  border: 1px solid hsl(var(--border)); 
+  border-radius: 12px; 
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: hsl(var(--border-hover));
+}
+
+.btn-primary { 
+  background: hsl(var(--text)); 
+  color: hsl(var(--bg)); 
+  border-radius: 8px; 
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+.btn-primary:hover { 
+  background: hsl(0 0% 85%); 
+  transform: translateY(-1px);
+}
+
+.glass-header {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Utilities for animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* Pulse glow */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+  50% { box-shadow: 0 0 20px 2px rgba(255,255,255,0.15); }
+}
+
+/* Dialog backdrop */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+dialog[open] {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Focus visible ring */
+button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.3);
+  outline-offset: 2px;
+}
