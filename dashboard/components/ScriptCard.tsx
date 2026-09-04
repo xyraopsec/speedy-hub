@@ -102,10 +102,10 @@ export default function ScriptCard({ script }: { script: Script }) {
         </div>
       )}
 
-      <div className="p-6 flex flex-col md:flex-row gap-5 items-start hover:bg-[#0c0c0c] transition-colors group">
-        <div className="w-14 h-14 rounded-xl bg-black border border-[#222] overflow-hidden flex-shrink-0 relative shadow-md">
+      <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-5 items-start hover:bg-[#0c0c0c] transition-colors group">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-black border border-[#222] overflow-hidden flex-shrink-0 relative shadow-md">
           <img
-            src={`https://thumbnails.roblox.com/v1/games/icons?universeIds=${script.game.universeId.toString()}&size=128x128&format=Png`}
+            src={`/api/thumbnail?type=game&id=${script.game.universeId.toString()}&size=128x128`}
             alt=""
             className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500"
           />
@@ -182,7 +182,7 @@ export default function ScriptCard({ script }: { script: Script }) {
           )}
         </div>
 
-        <div className="text-right md:w-40 shrink-0 flex flex-col items-end gap-3 pt-1">
+        <div className="text-right md:w-40 shrink-0 flex flex-row md:flex-col items-center md:items-end gap-3 pt-1">
           <div className="text-center">
             <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-1.5 justify-center">
               Executions

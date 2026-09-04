@@ -9,14 +9,14 @@ async function getStats() {
   const [total, today, games, recentExecutions] = await Promise.all([
     prisma.execution.count(),
     prisma.execution.count({ where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } }),
-    prisma.game.findMany({ include: { _count: { select: { executions: true } } }, orderBy: { order: "asc" } }),
+    prisma.game.findMany({ include: { _count: { select: { executions: true } } }, orderBy: { order: "asc" }, where: { scripts: { some: { isActive: true } } } }),
     prisma.execution.findMany({ 
       where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
       select: { createdAt: true }
     })
   ]);
   
-  const byGame = games.map(g => ({ name: g.name, count: g._count.executions }));
+  const byGame = games.map(g => ({ name: g.name, count: g._count.executions })).filter(g => g.count > 0);
   
   // Process chart data (executions per day for the last 7 days)
   const chartData = [];

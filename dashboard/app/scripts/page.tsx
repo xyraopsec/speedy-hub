@@ -42,16 +42,16 @@ export default async function ScriptsPage() {
   }).catch(() => []);
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <div className="space-y-6 md:space-y-10 animate-fade-in">
       <div className="border-b border-[#1a1a1a] pb-6">
-        <h1 className="text-4xl font-black tracking-tighter text-white">Scripts</h1>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-white">Scripts</h1>
         <p className="text-sm text-white/50 mt-2 flex items-center gap-2">
           <Terminal className="w-4 h-4 text-white/30" />
           Deploy, edit, and manage versioned Lua payloads from one place.
         </p>
       </div>
 
-      <form action={createScript} className="card p-8 space-y-6 relative overflow-hidden group">
+      <form action={createScript} className="card p-5 md:p-8 space-y-6 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-1 h-full bg-white opacity-20 group-focus-within:opacity-100 transition-opacity" />
         
         <div className="flex items-center justify-between mb-4">
@@ -62,7 +62,7 @@ export default async function ScriptsPage() {
           <span className="text-[10px] uppercase tracking-widest font-bold text-white/40 border border-[#333] px-2 py-1 rounded">Secure</span>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <label className="space-y-2 block">
             <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Target Universe ID</span>
             <input 
@@ -106,10 +106,10 @@ export default async function ScriptsPage() {
           />
         </label>
         
-        <div className="flex items-center gap-4 pt-2">
-          <button className="bg-white hover:bg-white/90 text-black font-bold px-8 py-3.5 rounded-lg transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:scale-[1.02] flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
+          <button className="w-full sm:w-auto bg-white hover:bg-white/90 text-black font-bold px-8 py-3.5 rounded-lg transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:scale-[1.02] flex items-center justify-center gap-2">
             <UploadCloud className="w-5 h-5" />
-            Deploy Payload to Universe
+            Deploy Payload
           </button>
           <span className="text-xs text-white/40 hidden sm:block">Saves to database and sets as active version automatically.</span>
         </div>

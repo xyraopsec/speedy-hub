@@ -7,16 +7,16 @@ export default async function KeysPage() {
   const keys = await prisma.apiKey.findMany({ orderBy: { createdAt: "desc" } }).catch(() => []);
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <div className="space-y-6 md:space-y-10 animate-fade-in">
       <div className="border-b border-[#1a1a1a] pb-6">
-        <h1 className="text-4xl font-black tracking-tighter text-white">API Keys</h1>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-white">API Keys</h1>
         <p className="text-sm text-white/50 mt-2 flex items-center gap-2">
           <KeyRound className="w-4 h-4 text-white/30" />
           Manage external API access tokens for third-party integrations.
         </p>
       </div>
 
-      <div className="card p-8">
+      <div className="card p-5 md:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
             <Shield className="w-5 h-5 text-white/50" />
