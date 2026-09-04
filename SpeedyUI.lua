@@ -94,6 +94,8 @@ local function label(parent, text, size, font, transparency, align)
     TextColor3 = Theme.Text,
     TextTransparency = transparency == nil and 0 or transparency,
     TextXAlignment = align or Enum.TextXAlignment.Left,
+    TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+    TextStrokeTransparency = 0.8,
   }, parent)
 end
 
@@ -136,7 +138,6 @@ function SpeedyUI:CreateWindow(opts)
   local sub = opts.SubTitle or ""
   local size = opts.Size or UDim2.fromOffset(560, 420)
   local toggleKey = opts.ToggleKey or Enum.KeyCode.RightShift
-  local useBlur = opts.Blur == nil and true or opts.Blur
 
   -- Clamp to viewport (mobile safety)
   local vp = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1200, 700)
@@ -156,11 +157,8 @@ function SpeedyUI:CreateWindow(opts)
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling, DisplayOrder = 999,
   }, parent)
 
-  local blur
-  if useBlur then
-    blur = New("BlurEffect", { Name = "SpeedyUIBlur", Size = 0 }, Lighting)
-    tween(blur, 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { Size = 24 })
-  end
+  -- No Lighting blur: script UI stays crisp. Old blurs are cleaned above.
+  local blur = nil
 
   -- Frosted shell (matches loader MainBox)
   local shell = New("CanvasGroup", {
