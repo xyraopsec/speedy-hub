@@ -31,8 +31,8 @@ local LocalPlayer = Players.LocalPlayer
 local Theme = {
   Red        = Color3.fromRGB(255, 26, 26),
   RedSoft    = Color3.fromRGB(255, 62, 62),
-  Bg         = Color3.fromRGB(16, 16, 20),
-  BgTrans    = 0.08, -- dark frosted glass: stays readable over bright scenes
+  Bg         = Color3.fromRGB(24, 24, 28),
+  BgTrans    = 0.3, -- airy glass like the loader; text stays crisp via stroke, no blur
   Inset      = Color3.fromRGB(12, 12, 15),
   RowHover   = Color3.fromRGB(255, 255, 255),
   Text       = Color3.fromRGB(255, 255, 255),
@@ -149,7 +149,7 @@ function SpeedyUI:CreateWindow(opts)
   local parent = getParent()
   if parent:FindFirstChild("SpeedyUI") then parent.SpeedyUI:Destroy() end
   for _, v in ipairs(Lighting:GetChildren()) do
-    if v.Name == "SpeedyUIBlur" then v:Destroy() end
+    if v.Name == "SpeedyUIBlur" or v.Name == "SpeedyBlur" then v:Destroy() end
   end
 
   local gui = New("ScreenGui", {
