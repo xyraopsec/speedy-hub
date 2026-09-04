@@ -31,8 +31,8 @@ local LocalPlayer = Players.LocalPlayer
 local Theme = {
   Red        = Color3.fromRGB(255, 26, 26),
   RedSoft    = Color3.fromRGB(255, 62, 62),
-  Bg         = Color3.fromRGB(24, 24, 28),
-  BgTrans    = 0.32, -- full-transparency glass
+  Bg         = Color3.fromRGB(16, 16, 20),
+  BgTrans    = 0.08, -- dark frosted glass: stays readable over bright scenes
   Inset      = Color3.fromRGB(12, 12, 15),
   RowHover   = Color3.fromRGB(255, 255, 255),
   Text       = Color3.fromRGB(255, 255, 255),
@@ -159,7 +159,7 @@ function SpeedyUI:CreateWindow(opts)
   local blur
   if useBlur then
     blur = New("BlurEffect", { Name = "SpeedyUIBlur", Size = 0 }, Lighting)
-    tween(blur, 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { Size = 16 })
+    tween(blur, 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { Size = 24 })
   end
 
   -- Frosted shell (matches loader MainBox)
@@ -225,7 +225,7 @@ function SpeedyUI:CreateWindow(opts)
   }, bar)
   local t1 = label(titleWrap, title, 15, Enum.Font.GothamBlack, 0, Enum.TextXAlignment.Center)
   t1.Size = UDim2.new(1, 0, 0, 20); t1.Position = UDim2.fromOffset(0, 6)
-  local t2 = label(titleWrap, sub, 10, Enum.Font.GothamMedium, 0.45, Enum.TextXAlignment.Center)
+  local t2 = label(titleWrap, sub, 10, Enum.Font.GothamMedium, 0.3, Enum.TextXAlignment.Center)
   t2.Size = UDim2.new(1, 0, 0, 13); t2.Position = UDim2.fromOffset(0, 27)
 
   New("Frame", { -- hairline under titlebar
@@ -272,7 +272,7 @@ function SpeedyUI:CreateWindow(opts)
       BorderSizePixel = 0, BackgroundTransparency = 0,
     }, btn)
     corner(bar, 999)
-    local bl = label(btn, name, 13, Enum.Font.GothamSemibold, 0.45)
+    local bl = label(btn, name, 13, Enum.Font.GothamSemibold, 0.3)
     bl.Size = UDim2.new(1, -24, 1, 0); bl.Position = UDim2.fromOffset(14, 0)
 
     local page = New("CanvasGroup", {
@@ -304,9 +304,9 @@ function SpeedyUI:CreateWindow(opts)
     self._active = tab
     for i, t in ipairs(self._tabs) do
       local on = (i == idx)
-      tween(t._btn, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = on and 0.9 or 1 })
+      tween(t._btn, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = on and 0.8 or 1 })
       tween(t._bar, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out, { Size = UDim2.fromOffset(on and 3 or 0, 16) })
-      tween(t._label, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { TextTransparency = on and 0 or 0.45 })
+      tween(t._label, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { TextTransparency = on and 0 or 0.3 })
       local pg = self._pages[i]
       if on then
         pg.Visible = true
@@ -348,14 +348,14 @@ function SpeedyUI:CreateWindow(opts)
   end
 
   function Tab:AddSection(title)
-    local s = label(self._page, string.upper(title), 10, Enum.Font.GothamBold, 0.5)
+    local s = label(self._page, string.upper(title), 10, Enum.Font.GothamBold, 0.35)
     s.Size = UDim2.new(1, 0, 0, 14)
     return s
   end
 
   function Tab:AddLabel(text)
     local r = row(self, 22)
-    local l = label(r, text, 12, Enum.Font.Gotham, 0.35)
+    local l = label(r, text, 12, Enum.Font.Gotham, 0.25)
     l.Size = UDim2.new(1, -20, 1, 0); l.Position = UDim2.fromOffset(10, 0)
     l.TextWrapped = true
     return r
@@ -376,7 +376,7 @@ function SpeedyUI:CreateWindow(opts)
     local list = New("UIListLayout", { Padding = UDim.new(0, 4) }, r)
     local t = label(r, o.Title or "", 13, Enum.Font.GothamBold, 0)
     t.Size = UDim2.new(1, 0, 0, 16)
-    local c = label(r, o.Content or "", 12, Enum.Font.Gotham, 0.35)
+    local c = label(r, o.Content or "", 12, Enum.Font.Gotham, 0.25)
     c.Size = UDim2.new(1, 0, 0, 0); c.AutomaticSize = Enum.AutomaticSize.Y
     c.TextWrapped = true
     return r
@@ -441,7 +441,7 @@ function SpeedyUI:CreateWindow(opts)
     }, self._page)
     local t = label(r, o.Title or "Toggle", 13, Enum.Font.GothamSemibold, 0)
     t.Size = UDim2.new(1, -70, 0, 16); t.Position = UDim2.fromOffset(10, 6)
-    local d = label(r, o.Description or "", 11, Enum.Font.Gotham, 0.5)
+    local d = label(r, o.Description or "", 11, Enum.Font.Gotham, 0.35)
     d.Size = UDim2.new(1, -70, 0, 13); d.Position = UDim2.fromOffset(10, 24)
 
     -- macOS switch
@@ -592,7 +592,7 @@ function SpeedyUI:CreateWindow(opts)
     stroke(head, Theme.Stroke, 0.88, 1)
     local t = label(head, o.Title or "Dropdown", 13, Enum.Font.GothamSemibold, 0)
     t.Size = UDim2.new(1, -20, 0, 16); t.Position = UDim2.fromOffset(10, 5)
-    local c = label(head, tostring(current or "—"), 11, Enum.Font.Gotham, 0.45)
+    local c = label(head, tostring(current or "—"), 11, Enum.Font.Gotham, 0.3)
     c.Name = "Current"; c.Size = UDim2.new(1, -34, 0, 13); c.Position = UDim2.fromOffset(10, 24)
     local chev = label(head, "›", 16, Enum.Font.GothamBold, 0.3, Enum.TextXAlignment.Center)
     chev.Name = "Chev"; chev.Size = UDim2.fromOffset(16, 16)
@@ -854,7 +854,7 @@ function SpeedyUI:Notify(o)
   corner(dot, 999)
   local t = label(n, o.Title or "Speedy", 13, Enum.Font.GothamBold, 0)
   t.Size = UDim2.new(1, 0, 0, 16)
-  local c = label(n, o.Content or "", 12, Enum.Font.Gotham, 0.35)
+  local c = label(n, o.Content or "", 12, Enum.Font.Gotham, 0.25)
   c.Size = UDim2.new(1, 0, 0, 0); c.AutomaticSize = Enum.AutomaticSize.Y
   c.TextWrapped = true
 
