@@ -1,5 +1,5 @@
 --[[ ============================================================
-  SPEEDY UI  v1.0  |  macOS glass interface library for Speedy Hub
+  SPEEDY UI  v1.1  |  macOS glass interface library for Speedy Hub
   Single-file, loadstring-ready. No dependencies.
 
   Usage:
@@ -19,6 +19,8 @@
   ============================================================ ]]
 
 local SpeedyUI = {}
+SpeedyUI.Version = "1.1"
+print("[SpeedyUI] v1.1 loaded — glass shell, scrim rows, zero blur")
 
 -- Services ----------------------------------------------------
 local TweenService = game:GetService("TweenService")
@@ -327,9 +329,10 @@ function SpeedyUI:CreateWindow(opts)
 
   -- Element helpers --------------------------------------------------
   local function row(tab, h)
+    -- dark scrim behind text (Apple HIG: dimming layer behind clear glass)
     local r = New("Frame", {
-      Size = UDim2.new(1, 0, 0, h or 40), BackgroundColor3 = Theme.RowHover,
-      BackgroundTransparency = 1, BorderSizePixel = 0,
+      Size = UDim2.new(1, 0, 0, h or 40), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+      BackgroundTransparency = 0.55, BorderSizePixel = 0,
     }, tab._page)
     corner(r, Theme.RadiusCtl)
     return r
@@ -337,16 +340,16 @@ function SpeedyUI:CreateWindow(opts)
 
   local function hoverRow(r)
     r.MouseEnter:Connect(function()
-      tween(r, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.94 })
+      tween(r, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.45 })
     end)
     r.MouseLeave:Connect(function()
-      tween(r, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 1 })
+      tween(r, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.55 })
     end)
   end
 
   function Tab:AddSection(title)
-    local s = label(self._page, string.upper(title), 10, Enum.Font.GothamBold, 0.35)
-    s.Size = UDim2.new(1, 0, 0, 14)
+    local s = label(self._page, string.upper(title), 11, Enum.Font.GothamBold, 0.35)
+    s.Size = UDim2.new(1, 0, 0, 15)
     return s
   end
 
@@ -433,12 +436,14 @@ function SpeedyUI:CreateWindow(opts)
   function Tab:AddToggle(o)
     local state = o.Default == true
     local r = New("TextButton", {
-      Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1,
-      Text = "", AutoButtonColor = false,
+      Size = UDim2.new(1, 0, 0, 44), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+      BackgroundTransparency = 0.55, Text = "", AutoButtonColor = false,
+      BorderSizePixel = 0,
     }, self._page)
+    corner(r, Theme.RadiusCtl)
     local t = label(r, o.Title or "Toggle", 13, Enum.Font.GothamSemibold, 0)
     t.Size = UDim2.new(1, -70, 0, 16); t.Position = UDim2.fromOffset(10, 6)
-    local d = label(r, o.Description or "", 11, Enum.Font.Gotham, 0.35)
+    local d = label(r, o.Description or "", 12, Enum.Font.GothamMedium, 0.35)
     d.Size = UDim2.new(1, -70, 0, 13); d.Position = UDim2.fromOffset(10, 24)
 
     -- macOS switch
@@ -495,8 +500,10 @@ function SpeedyUI:CreateWindow(opts)
     end
 
     local r = New("Frame", {
-      Size = UDim2.new(1, 0, 0, 52), BackgroundTransparency = 1, BorderSizePixel = 0,
+      Size = UDim2.new(1, 0, 0, 52), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+      BackgroundTransparency = 0.55, BorderSizePixel = 0,
     }, self._page)
+    corner(r, Theme.RadiusCtl)
     local t = label(r, o.Title or "Slider", 13, Enum.Font.GothamSemibold, 0)
     t.Size = UDim2.new(1, -70, 0, 16); t.Position = UDim2.fromOffset(10, 4)
     local val = label(r, fmt(value), 12, Enum.Font.GothamBold, 0.15, Enum.TextXAlignment.Right)
@@ -697,9 +704,11 @@ function SpeedyUI:CreateWindow(opts)
     local bound = o.Default or Enum.KeyCode.F
     local waiting = false
     local r = New("TextButton", {
-      Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1,
-      Text = "", AutoButtonColor = false,
+      Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+      BackgroundTransparency = 0.55, Text = "", AutoButtonColor = false,
+      BorderSizePixel = 0,
     }, self._page)
+    corner(r, Theme.RadiusCtl)
     local t = label(r, o.Title or "Keybind", 13, Enum.Font.GothamSemibold, 0)
     t.Size = UDim2.new(1, -80, 1, 0); t.Position = UDim2.fromOffset(10, 0)
     local pill = New("Frame", {
