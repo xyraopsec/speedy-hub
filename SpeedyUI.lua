@@ -92,7 +92,7 @@ local function label(parent, text, size, font, transparency, align)
     Font = font or Enum.Font.GothamMedium,
     TextSize = size or 13,
     TextColor3 = Theme.Text,
-    TextTransparency = transparency == nil and 0 or transparency,
+    TextTransparency = 0, -- forced full white: readable over glass
     TextXAlignment = align or Enum.TextXAlignment.Left,
     TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
     TextStrokeTransparency = 0.8,
@@ -206,8 +206,7 @@ function SpeedyUI:CreateWindow(opts)
     local g = label(b, glyph, 8, Enum.Font.GothamBold, 1, Enum.TextXAlignment.Center)
     g.Size = UDim2.fromScale(1, 1)
     g.TextColor3 = Color3.fromRGB(60, 0, 0)
-    b.MouseEnter:Connect(function() tween(g, 0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { TextTransparency = 0.15 }) end)
-    b.MouseLeave:Connect(function() tween(g, 0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { TextTransparency = 1 }) end)
+    -- glyphs always visible for readability (no hover fade)
     if act then b.MouseButton1Click:Connect(act) end
     return b
   end
@@ -304,7 +303,7 @@ function SpeedyUI:CreateWindow(opts)
       local on = (i == idx)
       tween(t._btn, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = on and 0.8 or 1 })
       tween(t._bar, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out, { Size = UDim2.fromOffset(on and 3 or 0, 16) })
-      tween(t._label, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { TextTransparency = on and 0 or 0.3 })
+      tween(t._label, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { TextTransparency = 0 })
       local pg = self._pages[i]
       if on then
         pg.Visible = true
