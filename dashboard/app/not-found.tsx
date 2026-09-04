@@ -3,16 +3,13 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-      <div className="text-8xl font-black tracking-tighter text-white/10 mb-4">404</div>
-      <h2 className="text-xl font-bold text-white/70 mb-2">Page not found</h2>
-      <p className="text-sm text-white/40 mb-8 max-w-xs">
-        The page you are looking for does not exist or has been moved.
+      <div className="mono text-[13px] text-[#62626C]">404</div>
+      <h2 className="font-display font-semibold text-[22px] text-[#F4F4F5] mt-2">Page not found</h2>
+      <p className="text-[13.5px] text-[#A7A7B0] mt-2 mb-6 max-w-xs">
+        This page does not exist or was moved. The old API Keys page was removed.
       </p>
-      <Link
-        href="/"
-        className="bg-white text-black font-bold px-6 py-3 rounded-lg text-sm hover:bg-white/90 transition-colors"
-      >
-        Back to Dashboard
+      <Link href="/" className="btn-ghost px-5 py-2.5">
+        Back to overview
       </Link>
     </div>
   );

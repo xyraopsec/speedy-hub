@@ -26,16 +26,16 @@ export default function ScriptCard({ script }: { script: Script }) {
   const [editing, setEditing] = useState(false);
   const [editCode, setEditCode] = useState(script.code);
   const [editVersion, setEditVersion] = useState(script.version);
-  const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const deleteConfirmRef = useRef<HTMLDialogElement>(null);
 
+  const lineCount = script.code.split("\n").length;
+
   useEffect(() => {
     if (editing && textareaRef.current) {
       textareaRef.current.focus();
-      textareaRef.current.setSelectionRange(0, 0);
     }
   }, [editing]);
 
@@ -73,12 +73,7 @@ export default function ScriptCard({ script }: { script: Script }) {
     const res = await fetch("/api/scripts/action", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: script.id,
-        action: "update",
-        code: editCode,
-        version: editVersion,
-      }),
+      body: JSON.stringify({ id: script.id, action: "update", code: editCode, version: editVersion }),
     });
     if (res.ok) {
       setEditing(false);
@@ -97,158 +92,125 @@ export default function ScriptCard({ script }: { script: Script }) {
   return (
     <>
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-white text-black px-5 py-3 rounded-xl font-bold text-sm shadow-[0_0_30px_rgba(255,255,255,0.2)] animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#17171C] border border-[#2A2A31] text-[#F4F4F5] px-4 py-2.5 rounded-[8px] text-[13px] font-medium">
           {toast}
         </div>
       )}
 
-      <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-5 items-start hover:bg-[#0c0c0c] transition-colors group">
-        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-black border border-[#222] overflow-hidden flex-shrink-0 relative shadow-md">
-          <img
-            src={`/api/thumbnail?type=game&id=${script.game.universeId.toString()}&size=128x128`}
-            alt=""
-            className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500"
-          />
-          <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
-        </div>
+      <div className="px-5 py-4 flex flex-col lg:flex-row gap-4">
+        <img
+          src={`/api/thumbnail?type=game&id=${script.game.universeId.toString()}&size=128x128`}
+          alt=""
+          className="w-14 h-14 rounded-[8px] object-cover border border-[#26262C] bg-[#0C0C0F] shrink-0"
+        />
 
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-3 mb-1.5">
-            <span className="font-black text-lg text-white tracking-tight">{script.game.name}</span>
-
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+            <span className="font-semibold text-[15px] text-[#F4F4F5]">{script.game.name}</span>
             {editing ? (
               <input
                 value={editVersion}
                 onChange={(e) => setEditVersion(e.target.value)}
-                className="w-20 px-2 py-0.5 rounded text-[10px] font-bold bg-black text-white mono border border-[#444] focus:border-white focus:outline-none"
+                className="input mono !w-24 !py-1 !px-2 !text-[12px]"
+                aria-label="Version"
               />
             ) : (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-[#1a1a1a] text-white/70 mono border border-[#222]">
-                v{script.version}
-              </div>
+              <span className="chip mono text-[#A7A7B0]">v{script.version}</span>
             )}
-
-            <div
-              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border cursor-pointer select-none ${
-                script.isActive
-                  ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]"
-                  : "bg-transparent text-white/30 border-[#222] hover:border-[#444]"
-              }`}
+            <button
               onClick={handleToggle}
+              className={`inline-flex items-center gap-1.5 text-[12.5px] font-medium ${
+                script.isActive ? "text-[#F4F4F5]" : "text-[#62626C] hover:text-[#A7A7B0]"
+              }`}
               title={script.isActive ? "Click to deactivate" : "Click to activate"}
             >
-              {script.isActive && <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />}
+              <span className={`w-1.5 h-1.5 rounded-full ${script.isActive ? "bg-[#E5484D]" : "bg-[#3A3A42]"}`} />
               {script.isActive ? "Active" : "Archived"}
-            </div>
+            </button>
           </div>
 
-          <div className="text-[11px] text-white/40 flex items-center gap-3 mb-4 font-medium uppercase tracking-wider">
-            <span className="mono">ID: {script.game.universeId.toString()}</span>
-            <span className="text-[#333]">&bull;</span>
-            <span>{new Date(script.updatedAt).toLocaleString(undefined, { dateStyle: "long", timeStyle: "short" })}</span>
+          <div className="mono text-[11.5px] text-[#62626C] mt-1.5">
+            {script.game.universeId.toString()} · {lineCount} lines ·{" "}
+            {new Date(script.updatedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
           </div>
 
           {editing ? (
-            <div className="space-y-3">
+            <div className="mt-3 space-y-2.5">
               <textarea
                 ref={textareaRef}
                 value={editCode}
                 onChange={(e) => setEditCode(e.target.value)}
-                rows={14}
-                className="w-full bg-[#050505] border border-[#444] rounded-lg p-5 text-xs font-mono text-white/80 focus:outline-none focus:border-white focus:text-white transition-colors resize-y custom-scrollbar"
+                rows={12}
+                spellCheck={false}
+                className="input mono ops-code resize-y"
               />
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleSave}
-                  className="bg-white hover:bg-white/90 text-black font-bold px-5 py-2 rounded-lg text-xs flex items-center gap-2 transition-all"
-                >
-                  <Save className="w-3.5 h-3.5" /> Save Changes
+              <div className="flex items-center gap-2">
+                <button onClick={handleSave} className="btn-primary px-4 py-2 text-[13px] inline-flex items-center gap-2" disabled={isPending}>
+                  <Save className="w-3.5 h-3.5" /> Save changes
                 </button>
                 <button
-                  onClick={() => { setEditing(false); setEditCode(script.code); setEditVersion(script.version); }}
-                  className="text-white/40 hover:text-white text-xs font-bold px-4 py-2 rounded-lg border border-[#333] hover:border-[#555] transition-all flex items-center gap-2"
+                  onClick={() => {
+                    setEditing(false);
+                    setEditCode(script.code);
+                    setEditVersion(script.version);
+                  }}
+                  className="btn-ghost px-4 py-2 text-[13px] inline-flex items-center gap-2"
                 >
                   <X className="w-3.5 h-3.5" /> Cancel
                 </button>
               </div>
             </div>
           ) : (
-            <div className="relative rounded-lg border border-[#222] bg-[#050505] overflow-hidden group-hover:border-[#333] transition-colors">
-              <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-[#111] to-transparent pointer-events-none z-10" />
-              <pre className="p-5 text-xs font-mono text-white/50 overflow-auto max-h-[160px] custom-scrollbar leading-relaxed">
-                {script.code}
-              </pre>
+            <div className="mt-3 rounded-[8px] border border-[#202027] bg-[#0C0C0F] overflow-hidden">
+              <div className="flex items-center justify-between px-3.5 py-2 border-b border-[#1B1B21]">
+                <span className="mono text-[11.5px] text-[#62626C]">
+                  lua · {lineCount} lines
+                </span>
+                <button onClick={handleCopy} className="mono text-[11.5px] text-[#A7A7B0] hover:text-[#F4F4F5] inline-flex items-center gap-1.5">
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <pre className="ops-code p-3.5 text-[#A7A7B0] overflow-auto max-h-[160px]">{script.code}</pre>
             </div>
           )}
         </div>
 
-        <div className="text-right md:w-40 shrink-0 flex flex-row md:flex-col items-center md:items-end gap-3 pt-1">
-          <div className="text-center">
-            <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-1.5 justify-center">
-              Executions
-            </span>
-            <span className="text-2xl font-black mono text-white group-hover:scale-105 transition-transform origin-right drop-shadow-md block mt-1">
+        <div className="shrink-0 flex lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-2.5 lg:w-[120px] lg:pt-0.5">
+          <div className="lg:text-right">
+            <div className="font-display font-semibold text-[22px] leading-none tabular-nums">
               {script.executionsCount.toLocaleString()}
-            </span>
+            </div>
+            <div className="mono text-[11px] text-[#62626C] mt-1">executions</div>
           </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handleCopy}
-              className="w-8 h-8 rounded-lg bg-[#111] border border-[#222] hover:border-[#444] hover:bg-[#1a1a1a] transition-all flex items-center justify-center text-white/40 hover:text-white"
-              title="Copy code"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+          <div className="flex items-center gap-0.5">
+            <button onClick={() => setEditing(true)} className="icon-btn" title="Edit script">
+              <Pencil className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setEditing(true)}
-              className="w-8 h-8 rounded-lg bg-[#111] border border-[#222] hover:border-[#444] hover:bg-[#1a1a1a] transition-all flex items-center justify-center text-white/40 hover:text-white"
-              title="Edit script"
-            >
-              <Pencil className="w-3.5 h-3.5" />
+            <button onClick={handleToggle} className="icon-btn" title={script.isActive ? "Deactivate" : "Activate"}>
+              {script.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
             </button>
-            <button
-              onClick={handleToggle}
-              className="w-8 h-8 rounded-lg bg-[#111] border border-[#222] hover:border-[#444] hover:bg-[#1a1a1a] transition-all flex items-center justify-center text-white/40 hover:text-white"
-              title={script.isActive ? "Deactivate" : "Activate"}
-            >
-              {script.isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
-            </button>
-            <button
-              onClick={() => deleteConfirmRef.current?.showModal()}
-              className="w-8 h-8 rounded-lg bg-[#111] border border-[#222] hover:border-red-500/50 hover:bg-red-500/10 transition-all flex items-center justify-center text-white/40 hover:text-red-400"
-              title="Delete script"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
+            <button onClick={() => deleteConfirmRef.current?.showModal()} className="icon-btn danger" title="Delete script">
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
       </div>
 
-      <dialog
-        ref={deleteConfirmRef}
-        className="backdrop:bg-black/70 bg-transparent border border-[#333] rounded-2xl p-0 max-w-md w-full"
-      >
-        <div className="bg-[#111] rounded-2xl p-8 space-y-5">
-          <div>
-            <h3 className="text-lg font-black text-white">Delete Script</h3>
-            <p className="text-sm text-white/50 mt-2">
-              This will permanently remove <span className="text-white font-bold">{script.name}</span> (v{script.version}) for{" "}
-              <span className="text-white font-bold">{script.game.name}</span>. This cannot be undone.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 justify-end">
-            <button
-              onClick={() => deleteConfirmRef.current?.close()}
-              className="text-white/50 hover:text-white text-sm font-bold px-4 py-2.5 rounded-lg border border-[#333] hover:border-[#555] transition-all"
-            >
+      <dialog ref={deleteConfirmRef} className="bg-transparent p-0 max-w-md w-[calc(100%-2rem)]">
+        <div className="panel p-6">
+          <h3 className="font-display font-semibold text-[17px] text-[#F4F4F5]">Delete this script?</h3>
+          <p className="text-[13.5px] text-[#A7A7B0] mt-2 leading-relaxed">
+            <span className="text-[#F4F4F5] font-medium">{script.name}</span> (v{script.version}) for{" "}
+            <span className="text-[#F4F4F5] font-medium">{script.game.name}</span> will be removed permanently,
+            including its execution history.
+          </p>
+          <div className="flex items-center justify-end gap-2 mt-5">
+            <button onClick={() => deleteConfirmRef.current?.close()} className="btn-ghost px-4 py-2 text-[13px]">
               Cancel
             </button>
-            <button
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]"
-            >
-              Delete Permanently
+            <button onClick={handleDelete} className="btn-primary px-4 py-2 text-[13px]">
+              Delete
             </button>
           </div>
         </div>

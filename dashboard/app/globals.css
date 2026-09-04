@@ -1,97 +1,197 @@
 @import "tailwindcss";
 
-/* Premium Black & White Design System */
+/* Speedy Hub ops console — locked tokens, see DESIGN.md */
 :root {
-  --bg: 0 0% 0%; /* Pure Black */
-  --bg-soft: 0 0% 4%; /* Near Black */
-  --bg-card: 0 0% 7%; /* Dark Gray */
-  --border: 0 0% 12%; /* Subtle Gray Border */
-  --border-hover: 0 0% 25%; /* Lighter border on hover */
-  --text: 0 0% 100%; /* Pure White */
-  --muted: 0 0% 55%; /* Medium Gray */
-  --muted-soft: 0 0% 35%; /* Darker Gray */
+  --bg: #09090b;
+  --panel: #101014;
+  --inset: #0c0c0f;
+  --line: #202027;
+  --line-soft: #1b1b21;
+  --text: #f4f4f5;
+  --text-2: #a7a7b0;
+  --text-3: #62626c;
+  --accent: #e5484d;
+  --accent-hover: #d13438;
+  --ok: #46a758;
 }
 
-* { border-color: hsl(var(--border)); }
-body { 
-  background: hsl(var(--bg)); 
-  color: hsl(var(--text)); 
-  font-feature-settings: "tnum" 1; 
+html {
+  background: var(--bg);
 }
 
-/* Tabular numbers + mono font */
-.mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--border-hover)); }
-
-/* Components */
-.card { 
-  background: hsl(var(--bg-card)); 
-  border: 1px solid hsl(var(--border)); 
-  border-radius: 12px; 
-  transition: all 0.3s ease;
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-.card:hover {
-  border-color: hsl(var(--border-hover));
+.font-display {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
-.btn-primary { 
-  background: hsl(var(--text)); 
-  color: hsl(var(--bg)); 
-  border-radius: 8px; 
-  transition: all 0.2s ease;
+.mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* Panels: flat, hairline, no shadow */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.panel-divide > * + * {
+  border-top: 1px solid var(--line-soft);
+}
+
+/* Controls */
+.input {
+  width: 100%;
+  background: var(--inset);
+  border: 1px solid #26262c;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.input::placeholder {
+  color: var(--text-3);
+}
+.input:hover {
+  border-color: #34343c;
+}
+.input:focus {
+  outline: none;
+  border-color: #6b6b76;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
   font-weight: 600;
+  font-size: 13.5px;
+  transition: background-color 120ms ease;
 }
-.btn-primary:hover { 
-  background: hsl(0 0% 85%); 
-  transform: translateY(-1px);
-}
-
-.glass-header {
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.btn-primary:hover {
+  background: var(--accent-hover);
 }
 
-/* Utilities for animations */
-.animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.btn-ghost {
+  border: 1px solid #26262c;
+  border-radius: 8px;
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: 13.5px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.btn-ghost:hover {
+  background: #17171c;
+  color: var(--text);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.icon-btn:hover {
+  background: #1a1a20;
+  color: var(--text);
+}
+.icon-btn.danger:hover {
+  background: rgba(229, 72, 77, 0.12);
+  color: #f2555a;
 }
 
-/* Shimmer effect for loading states */
-@keyframes shimmer {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(100%); }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #2a2a31;
+  background: #15151a;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-/* Pulse glow */
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
-  50% { box-shadow: 0 0 20px 2px rgba(255,255,255,0.15); }
+/* Tables */
+.ops-table th {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--inset);
+  white-space: nowrap;
+}
+.ops-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+}
+.ops-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.ops-table tbody tr {
+  transition: background-color 120ms ease;
+}
+.ops-table tbody tr:hover {
+  background: #141419;
 }
 
-/* Dialog backdrop */
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #26262c;
+  border-radius: 5px;
+  border: 2px solid var(--bg);
+}
+
+/* Code */
+pre.ops-code {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+/* Dialog */
 dialog::backdrop {
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.72);
 }
-
 dialog[open] {
-  animation: fadeIn 0.2s ease-out;
+  animation: none;
 }
 
-/* Focus visible ring */
-button:focus-visible, input:focus-visible, textarea:focus-visible {
-  outline: 2px solid rgba(255,255,255,0.3);
+/* Focus */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 1px solid #6b6b76;
   outline-offset: 2px;
+}
+
+::selection {
+  background: #2a2a31;
+  color: var(--text);
 }

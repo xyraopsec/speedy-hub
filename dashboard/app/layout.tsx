@@ -1,78 +1,65 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
-import Link from "next/link";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { MobileNav } from "@/components/MobileNav";
+import { SideNav } from "@/components/SideNav";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const display = Space_Grotesk({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display" });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-mono" });
 
-export const metadata = { title: "Speedy Hub — Dashboard", description: "Manage car & moto scripts, track executions", icons: { icon: "/favicon.svg" } };
+export const metadata = {
+  title: "Speedy Hub",
+  description: "Script operations: deploy payloads, track executions.",
+  icons: { icon: "/favicon.svg" },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased min-h-screen selection:bg-white selection:text-black`}>
+      <body className={`${inter.variable} ${display.variable} ${mono.variable} antialiased min-h-screen`} style={{ fontFamily: "var(--font-sans)" }}>
         <div className="flex min-h-screen">
-          {/* Sidebar — desktop only */}
-          <aside className="w-[240px] border-r border-[#1a1a1a] bg-black hidden md:flex flex-col sticky top-0 h-screen z-30">
-            <div className="h-[72px] flex items-center gap-3 px-6 border-b border-[#1a1a1a]">
-              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-black text-black text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">S</div>
-              <div>
-                <div className="font-black tracking-tight leading-none text-white">SPEEDY</div>
-                <div className="text-[9px] tracking-[0.2em] text-white/40 mt-1 uppercase">HUB • DASHBOARD</div>
+          {/* Sidebar */}
+          <aside className="w-[248px] shrink-0 border-r border-[#202027] bg-[#0C0C0F] hidden md:flex flex-col sticky top-0 h-screen">
+            <div className="h-16 flex items-center gap-2.5 px-5 border-b border-[#1B1B21]">
+              <div className="w-7 h-7 rounded-[8px] bg-[#E5484D] flex items-center justify-center font-bold text-white text-[13px]" style={{ fontFamily: "var(--font-display)" }}>
+                S
+              </div>
+              <div className="leading-none">
+                <div className="font-display font-semibold text-[15px] text-[#F4F4F5]">Speedy Hub</div>
+                <div className="mono text-[11px] text-[#62626C] mt-1">script ops</div>
               </div>
             </div>
-            
-            <nav className="p-4 space-y-1.5 text-sm flex-1">
-              {[
-                ["Dashboard", "/"],
-                ["Scripts", "/scripts"],
-                ["Executions", "/executions"],
-                ["API Keys", "/keys"],
-              ].map(([label, href]) => (
-                <Link 
-                  key={label} 
-                  href={href} 
-                  className="group flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all duration-300 text-white/60 hover:text-white"
-                >
-                  <span className="font-medium">{label}</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </Link>
-              ))}
+
+            <nav className="p-3 flex-1">
+              <div className="px-2 pb-2 text-[12px] font-medium text-[#62626C]">Workspace</div>
+              <SideNav />
             </nav>
-            
-            <div className="p-5 border-t border-[#1a1a1a]">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Systems Online</span>
+
+            <div className="p-5 border-t border-[#1B1B21]">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#46A758]" />
+                <span className="text-[12.5px] text-[#A7A7B0]">Backend connected</span>
               </div>
-              <div className="text-[10px] text-white/30 leading-relaxed uppercase tracking-wider">
-                Black & White • Vercel
-                <br />Prisma Postgres
-              </div>
+              <div className="mono text-[11px] text-[#62626C] mt-1.5">prisma postgres · vercel</div>
             </div>
           </aside>
-          
-          {/* Main Content */}
-          <main className="flex-1 min-w-0 bg-[#040404]">
-            {/* Header */}
-            <header className="h-[60px] md:h-[72px] border-b border-[#1a1a1a] glass-header sticky top-0 z-20 flex items-center justify-between px-4 md:px-8">
-              <div className="flex items-center gap-3">
+
+          {/* Main */}
+          <main className="flex-1 min-w-0">
+            <header className="h-16 border-b border-[#1B1B21] bg-[#09090B] sticky top-0 z-20 flex items-center justify-between px-4 md:px-8">
+              <div className="flex items-center gap-3 min-w-0">
                 <MobileNav />
-                <div className="hidden sm:block text-xs font-medium text-white/40 hover:text-white/80 transition-colors cursor-pointer">discord.gg/speedy</div>
-                <div className="hidden sm:block w-1 h-1 rounded-full bg-white/20" />
-                <div className="text-xs font-mono text-white/40">v4.0</div>
+                <span className="mono text-[12px] text-[#62626C] truncate">speedy-hub / dashboard</span>
               </div>
               <div className="flex items-center gap-3">
-                <button className="w-9 h-9 rounded-full bg-[#111] border border-[#222] hover:border-[#444] hover:bg-[#1a1a1a] transition-all flex items-center justify-center text-white/60 hover:text-white">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                </button>
-                <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs cursor-pointer shadow-[0_0_10px_rgba(255,255,255,0.15)] hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-shadow">AD</div>
+                <span className="mono text-[12px] text-[#62626C] hidden sm:block">v4.0</span>
+                <div className="w-8 h-8 rounded-full bg-[#1A1A20] border border-[#26262C] flex items-center justify-center text-[12px] font-semibold text-[#A7A7B0]">
+                  AD
+                </div>
               </div>
             </header>
-            
-            <div className="p-5 md:p-8 lg:p-10 max-w-[1400px] mx-auto animate-fade-in">
-              {children}
-            </div>
+
+            <div className="px-4 md:px-8 py-6 md:py-8 max-w-[1200px] mx-auto">{children}</div>
           </main>
         </div>
       </body>
