@@ -2,8 +2,39 @@ import { NextRequest, NextResponse } from "next/server";
 
 const FALLBACK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"><rect width="150" height="150" fill="%23111"/><text x="75" y="78" text-anchor="middle" fill="%23444" font-family="sans-serif" font-size="14" font-weight="bold">No Image</text></svg>`;
 
-// GET /api/thumbnail?type=game&id=123&size=128x128
-// GET /api/thumbnail?type=user&id=123&size=150x150
+async function resolveUniverseId(placeId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://apis.roblox.com/universes/v1/places/${placeId}/universe`,
+      { next: { revalidate: 86400 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.universeId ? String(data.universeId) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchGameIcon(universeId: string, size: string): Promise<ArrayBuffer | null> {
+  try {
+    const res = await fetch(
+      `https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&size=${size}&format=Png`,
+      { next: { revalidate: 600 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const item = (data.data || [])[0];
+    if (item?.state === "Completed" && item.imageUrl) {
+      const imgRes = await fetch(item.imageUrl);
+      if (imgRes.ok) return imgRes.arrayBuffer();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get("type") || "game";
   const id = req.nextUrl.searchParams.get("id");
@@ -15,41 +46,49 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  try {
-    let url: string;
-    if (type === "user") {
-      url = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${id}&size=${size}&format=Png&isCircular=false`;
-    } else {
-      url = `https://thumbnails.roblox.com/v1/games/icons?universeIds=${id}&size=${size}&format=Png`;
-    }
-
-    const res = await fetch(url, { next: { revalidate: 600 } });
-    if (!res.ok) throw new Error(`Roblox API ${res.status}`);
-
-    const data = await res.json();
-    const item = (data.data || [])[0];
-
-    if (item?.state === "Completed" && item.imageUrl) {
-      // Proxy the actual image to avoid CORS issues
-      const imgRes = await fetch(item.imageUrl);
-      if (imgRes.ok) {
-        const buf = await imgRes.arrayBuffer();
-        return new NextResponse(buf, {
-          headers: {
-            "Content-Type": "image/png",
-            "Cache-Control": "public, max-age=3600",
-          },
-        });
+  if (type === "user") {
+    try {
+      const res = await fetch(
+        `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${id}&size=${size}&format=Png&isCircular=false`,
+        { next: { revalidate: 600 } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const item = (data.data || [])[0];
+        if (item?.state === "Completed" && item.imageUrl) {
+          const imgRes = await fetch(item.imageUrl);
+          if (imgRes.ok) {
+            const buf = await imgRes.arrayBuffer();
+            return new NextResponse(buf, {
+              headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" },
+            });
+          }
+        }
       }
-    }
-
-    // Image not ready or unavailable
-    return new NextResponse(FALLBACK_SVG, {
-      headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=300" },
-    });
-  } catch {
+    } catch {}
     return new NextResponse(FALLBACK_SVG, {
       headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=300" },
     });
   }
+
+  // Game thumbnail — try as universeId first
+  let buf = await fetchGameIcon(id, size);
+
+  // If empty, resolve placeId → universeId
+  if (!buf) {
+    const resolved = await resolveUniverseId(id);
+    if (resolved && resolved !== id) {
+      buf = await fetchGameIcon(resolved, size);
+    }
+  }
+
+  if (buf) {
+    return new NextResponse(buf, {
+      headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" },
+    });
+  }
+
+  return new NextResponse(FALLBACK_SVG, {
+    headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=300" },
+  });
 }
