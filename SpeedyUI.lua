@@ -1,5 +1,5 @@
 --[[ ============================================================
-  SPEEDY UI  v1.2  |  macOS glass interface library for Speedy Hub
+  SPEEDY UI  v1.3  |  macOS glass interface library for Speedy Hub
   Single-file, loadstring-ready. No dependencies.
 
   Usage:
@@ -19,8 +19,8 @@
   ============================================================ ]]
 
 local SpeedyUI = {}
-SpeedyUI.Version = "1.2"
-print("[SpeedyUI] v1.2 loaded — glass shell, scrim rows, zero blur")
+SpeedyUI.Version = "1.3"
+print("[SpeedyUI] v1.3 loaded — opaque canvas, strong stroke, zero blur")
 
 -- Services ----------------------------------------------------
 local TweenService = game:GetService("TweenService")
@@ -34,7 +34,7 @@ local Theme = {
   Red        = Color3.fromRGB(255, 26, 26),
   RedSoft    = Color3.fromRGB(255, 62, 62),
   Bg         = Color3.fromRGB(24, 24, 28),
-  BgTrans    = 0.3, -- airy glass like the loader; text stays crisp via stroke, no blur
+  BgTrans    = 0.6, -- darker canvas so text holds contrast
   Inset      = Color3.fromRGB(12, 12, 15),
   RowHover   = Color3.fromRGB(255, 255, 255),
   Text       = Color3.fromRGB(255, 255, 255),
@@ -92,12 +92,12 @@ local function label(parent, text, size, font, transparency, align)
     BackgroundTransparency = 1,
     Text = text,
     Font = font or Enum.Font.GothamMedium,
-    TextSize = size or 13,
+    TextSize = size or 14,
     TextColor3 = Theme.Text,
     TextTransparency = 0, -- forced full white: readable over glass
     TextXAlignment = align or Enum.TextXAlignment.Left,
     TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-    TextStrokeTransparency = 0.8,
+    TextStrokeTransparency = 0.3,
   }, parent)
 end
 
@@ -187,7 +187,7 @@ function SpeedyUI:CreateWindow(opts)
   local shellStroke = stroke(shell, Theme.Stroke, 1, 1)
   local shellGrad = New("UIGradient", {
     Color = ColorSequence.new(Color3.fromRGB(44, 44, 52), Color3.fromRGB(16, 16, 20)),
-    Rotation = 90, Transparency = NumberSequence.new(0.1, 0.1),
+    Rotation = 90, Transparency = NumberSequence.new(0.05, 0.05),
   }, shell)
 
   -- Titlebar
@@ -343,7 +343,7 @@ function SpeedyUI:CreateWindow(opts)
     -- dark scrim behind text (Apple HIG: dimming layer behind clear glass)
     local r = New("Frame", {
       Size = UDim2.new(1, 0, 0, h or 40), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-      BackgroundTransparency = 0.55, BorderSizePixel = 0,
+      BackgroundTransparency = 0.7, BorderSizePixel = 0,
     }, tab._page)
     corner(r, Theme.RadiusCtl)
     return r
@@ -351,10 +351,10 @@ function SpeedyUI:CreateWindow(opts)
 
   local function hoverRow(r)
     r.MouseEnter:Connect(function()
-      tween(r, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.45 })
+      tween(r, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.6 })
     end)
     r.MouseLeave:Connect(function()
-      tween(r, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.55 })
+      tween(r, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, { BackgroundTransparency = 0.7 })
     end)
   end
 
@@ -423,11 +423,12 @@ function SpeedyUI:CreateWindow(opts)
     local box = New("TextBox", {
       Position = UDim2.fromOffset(10, 26), Size = UDim2.new(1, -20, 0, 0),
       AutomaticSize = Enum.AutomaticSize.None,
-      BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.55,
+      BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.7,
       Text = "", PlaceholderText = o.Placeholder or "Type here...",
       PlaceholderColor3 = Color3.fromRGB(255, 255, 255),
       Font = Enum.Font.Gotham, TextSize = 12,
       TextColor3 = Theme.Text, TextXAlignment = Enum.TextXAlignment.Left,
+      TextStrokeColor3 = Color3.fromRGB(0, 0, 0), TextStrokeTransparency = 0.3,
       ClearTextOnFocus = false,
     }, r)
     box.Size = UDim2.new(1, -20, 0, 22)
@@ -448,7 +449,7 @@ function SpeedyUI:CreateWindow(opts)
     local state = o.Default == true
     local r = New("TextButton", {
       Size = UDim2.new(1, 0, 0, 44), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-      BackgroundTransparency = 0.55, Text = "", AutoButtonColor = false,
+      BackgroundTransparency = 0.7, Text = "", AutoButtonColor = false,
       BorderSizePixel = 0,
     }, self._page)
     corner(r, Theme.RadiusCtl)
@@ -512,7 +513,7 @@ function SpeedyUI:CreateWindow(opts)
 
     local r = New("Frame", {
       Size = UDim2.new(1, 0, 0, 52), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-      BackgroundTransparency = 0.55, BorderSizePixel = 0,
+      BackgroundTransparency = 0.7, BorderSizePixel = 0,
     }, self._page)
     corner(r, Theme.RadiusCtl)
     local t = label(r, o.Title or "Slider", 13, Enum.Font.GothamSemibold, 0)
@@ -716,7 +717,7 @@ function SpeedyUI:CreateWindow(opts)
     local waiting = false
     local r = New("TextButton", {
       Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-      BackgroundTransparency = 0.55, Text = "", AutoButtonColor = false,
+      BackgroundTransparency = 0.7, Text = "", AutoButtonColor = false,
       BorderSizePixel = 0,
     }, self._page)
     corner(r, Theme.RadiusCtl)
