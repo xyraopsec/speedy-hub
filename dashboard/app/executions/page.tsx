@@ -65,7 +65,7 @@ export default async function ExecutionsPage() {
                         <td className="p-4">
                           <div className="flex items-center gap-2.5">
                             <img
-                              src={`/api/thumbnail?type=game&id=${r.game.universeId.toString()}&size=48x48`}
+                              src={`/api/thumbnail?type=game&id=${r.game.universeId.toString()}&size=150x150`}
                               alt=""
                               className="w-8 h-8 rounded-lg object-cover border border-[#222] bg-[#111]"
                             />
@@ -119,7 +119,7 @@ export default async function ExecutionsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <img
-                          src={`/api/thumbnail?type=game&id=${r.game.universeId.toString()}&size=48x48`}
+                          src={`/api/thumbnail?type=game&id=${r.game.universeId.toString()}&size=150x150`}
                           alt=""
                           className="w-10 h-10 rounded-lg object-cover border border-[#222] bg-[#111]"
                         />

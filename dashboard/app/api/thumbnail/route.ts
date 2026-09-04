@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const FALLBACK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"><rect width="150" height="150" fill="%23111"/><text x="75" y="78" text-anchor="middle" fill="%23444" font-family="sans-serif" font-size="14" font-weight="bold">No Image</text></svg>`;
 
-const VALID_GAME_SIZES = ["256x256", "420x420", "150x150", "100x100", "60x60"];
+const VALID_GAME_SIZES = ["420x420", "256x256", "150x150", "128x128"];
 const VALID_USER_SIZES = ["150x150", "100x100", "60x60", "48x48", "30x30"];
 
 function pickValidSize(requested: string, valid: string[]): string {
