@@ -429,23 +429,34 @@ task.spawn(function()
         kStatus.TextXAlignment = Enum.TextXAlignment.Left
 
         local btnDiscord = Instance.new("TextButton", KeyUI)
-        btnDiscord.Size = UDim2.fromOffset(210, 44)
+        btnDiscord.Size = UDim2.fromOffset(135, 44)
         btnDiscord.Position = UDim2.fromOffset(20, 180)
         btnDiscord.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
         btnDiscord.BorderSizePixel = 0
         btnDiscord.Font = Enum.Font.GothamBold
-        btnDiscord.Text = "Copy Discord Link"
+        btnDiscord.Text = "Join Discord"
         btnDiscord.TextColor3 = Color3.new(1, 1, 1)
-        btnDiscord.TextSize = 12
+        btnDiscord.TextSize = 11
         Instance.new("UICorner", btnDiscord).CornerRadius = UDim.new(0, 8)
 
+        local btnGetKey = Instance.new("TextButton", KeyUI)
+        btnGetKey.Size = UDim2.fromOffset(135, 44)
+        btnGetKey.Position = UDim2.fromOffset(165, 180)
+        btnGetKey.BackgroundColor3 = Color3.fromRGB(45, 45, 58)
+        btnGetKey.BorderSizePixel = 0
+        btnGetKey.Font = Enum.Font.GothamBold
+        btnGetKey.Text = "Get Key (Web)"
+        btnGetKey.TextColor3 = Color3.new(1, 1, 1)
+        btnGetKey.TextSize = 11
+        Instance.new("UICorner", btnGetKey).CornerRadius = UDim.new(0, 8)
+
         local btnSubmit = Instance.new("TextButton", KeyUI)
-        btnSubmit.Size = UDim2.fromOffset(210, 44)
-        btnSubmit.Position = UDim2.new(1, -230, 0, 180)
+        btnSubmit.Size = UDim2.fromOffset(145, 44)
+        btnSubmit.Position = UDim2.new(1, -165, 0, 180)
         btnSubmit.BackgroundColor3 = Color3.fromRGB(229, 72, 77)
         btnSubmit.BorderSizePixel = 0
         btnSubmit.Font = Enum.Font.GothamBold
-        btnSubmit.Text = "Verify & Continue"
+        btnSubmit.Text = "Verify Key"
         btnSubmit.TextColor3 = Color3.new(1, 1, 1)
         btnSubmit.TextSize = 12
         Instance.new("UICorner", btnSubmit).CornerRadius = UDim.new(0, 8)
@@ -470,10 +481,25 @@ task.spawn(function()
                     setclipboard(link)
                 end
             end)
-            btnDiscord.Text = "Copied to Clipboard!"
+            btnDiscord.Text = "Copied Discord!"
             task.delay(2, function()
                 if btnDiscord and btnDiscord.Parent then
-                    btnDiscord.Text = "Copy Discord Link"
+                    btnDiscord.Text = "Join Discord"
+                end
+            end)
+        end)
+
+        btnGetKey.MouseButton1Click:Connect(function()
+            local link = backend .. "/get-key"
+            pcall(function()
+                if setclipboard then
+                    setclipboard(link)
+                end
+            end)
+            btnGetKey.Text = "Copied URL!"
+            task.delay(2, function()
+                if btnGetKey and btnGetKey.Parent then
+                    btnGetKey.Text = "Get Key (Web)"
                 end
             end)
         end)

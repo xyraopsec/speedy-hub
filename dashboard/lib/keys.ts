@@ -46,3 +46,25 @@ export function generateKey(): string {
   const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
   return `SPEEDY-${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`;
 }
+
+// Generates a session token for checkpoint progression
+export function generateSessionToken(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Issues a 24-hour key upon completing checkpoints
+export async function issueCheckpointKey(note: string = "Checkpoint Automated Key"): Promise<string> {
+  const key = generateKey();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  await prisma.licenseKey.create({
+    data: {
+      key,
+      note,
+      expiresAt,
+      maxExecutions: null,
+    },
+  });
+  return key;
+}

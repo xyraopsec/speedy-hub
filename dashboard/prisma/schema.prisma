@@ -67,6 +67,20 @@ model ApiKey {
   createdAt DateTime @default(now())
 }
 
+// Key checkpoints / ad-link sessions. Users visit /get-key, complete step 1 -> step 2 -> vend key.
+model KeySession {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  ip          String?
+  step        Int       @default(1)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  keyIssued   String?
+  @@index([token])
+  @@index([createdAt])
+}
+
 // License keys gate payload delivery. Enforcement lives server-side
 // (GET /api/scripts requires a valid key+HWID) — any check inside Lua
 // is UX only, since the attacker owns the executor.
