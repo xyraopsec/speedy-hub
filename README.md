@@ -1,126 +1,167 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/logo.png" width="120" alt="Speedy Hub logo" />
-</p>
+# Speedy Hub
 
-<h1 align="center">SPEEDY HUB</h1>
+Roblox script hub with hardware‑bound licensing and an automated Linkvertise key system.
 
-<p align="center">
-  <b>Car & motorcycle script hub for Roblox — loader, backend dashboard, and a shared UI library.</b><br />
-  One look everywhere: red bars, frosted glass, live execution tracking.
-</p>
-
-<p align="center">
-  <a href="https://dashboard-ten-peach-19.vercel.app"><img src="https://img.shields.io/badge/dashboard-live-ff1a1a?style=flat-square" alt="dashboard" /></a>
-  <img src="https://img.shields.io/badge/Luau-2C2D34?style=flat-square&logo=lua" alt="Luau" />
-  <img src="https://img.shields.io/badge/Next.js_15-black?style=flat-square&logo=next.js" alt="Next.js" />
-  <img src="https://img.shields.io/badge/Prisma_Postgres-2D3748?style=flat-square&logo=prisma" alt="Prisma" />
-  <img src="https://img.shields.io/badge/license-MIT-999?style=flat-square" alt="MIT" />
-</p>
+**Live demo:**  
+- Key site: [speedy-keys-eight.vercel.app](https://speedy-keys-eight.vercel.app)  
+- Backend API: [dashboard-ten-peach-19.vercel.app](https://dashboard-ten-peach-19.vercel.app)
 
 ---
 
-## Run it
+## Table of Contents
 
-**1. Loader** — game picker + auto-updates, powered by the dashboard backend:
-
-```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Loader.lua"))()
-```
-
-**2. Production UI library** — macOS glass, traffic lights, toggles/sliders/dropdowns/keybinds, notifications:
-
-```lua
-local SpeedyUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/SpeedyUI.lua"))()
-local Window = SpeedyUI:CreateWindow({ Title = "Speedy Hub", SubTitle = "Driving Empire" })
-local Tab = Window:AddTab("Home")
-Tab:AddToggle({ Title = "Auto Farm", Callback = function(v) print(v) end })
-```
-
-**3. Dashboard** — deploy payloads, watch executions roll in: [dashboard-ten-peach-19.vercel.app](https://dashboard-ten-peach-19.vercel.app)
+- [Architecture](#architecture)
+- [Key System Flow](#key-system-flow)
+- [Project Structure](#project-structure)
+- [Setup & Installation](#setup--installation)
+- [Environment Variables](#environment-variables)
+- [Deployment](#deployment)
+- [Database](#database)
+- [Roblox Loader](#roblox-loader)
+- [License](#license)
 
 ---
 
-## What's inside
+## Architecture
 
-| Piece | What it does |
-|---|---|
-| `Loader.lua` | Animated logo intro → loading bar → backend-driven game grid. Fetches games from `/api/games`, logs every run to `/api/executions`, then loads that game's payload from `/api/scripts`. |
-| `dashboard/` | Next.js 15 + Prisma Postgres ops console. Deploy Lua payloads per universe, browse the execution log with Roblox avatars + game thumbnails, 7-day volume chart, per-game distribution. |
-| `SpeedyUI.lua` | Single-file interface library every game script shares: frosted window, sidebar tabs, button / toggle / slider / dropdown / input / keybind, toasts, RightShift hide, mobile + touch support. |
-| `SpeedyUI_Example.lua` | Copy-paste starter showing every element. |
-| `Main.lua` | Legacy per-game template (Fluent-based, kept for reference). |
 
-Check the **`test` branch** for experiments: `veryud` / `veryudfix` glass redesigns, `MacGlass` dark-glass lib, `MacLibLight` white-mode MacLib conversion, and the Speedy-branded SerhiiUI showcase — each with its own `_Test.lua` loadstring.
 
 ---
 
-## Dashboard
+## Key System Flow
 
-```
-Overview    → total / today / active scripts / games · 7-day volume · top games
-Scripts     → deploy payload (universe ID + Lua) · edit · version · activate/archive · delete
-Executions  → live log: game icon · user avatar · version · executor · IP
-```
-
-Stack: Next.js App Router, Tailwind, Recharts, Prisma + Postgres (Prisma Data Platform), deployed on Vercel. Design tokens are locked in [`dashboard/DESIGN.md`](dashboard/DESIGN.md) — one accent red, Space Grotesk display type, hairlines instead of shadows, zero AI-slop gradients.
-
-Local dev:
-
-```bash
-cd dashboard
-npm install
-npx prisma db push
-npm run dev
-```
+1. **User opens key‑site** → fetches `GET /api/checkpoint` from backend.
+2. **Backend generates a session** and builds a Linkvertise dynamic URL with a signed callback target:
+   - `https://link-to.net/9061250/dynamic?r=<base64(https://dashboard/.../callback?token=...&sig=...)>`
+3. **User completes the Linkvertise task** → Linkvertise automatically redirects to the callback endpoint.
+4. **Callback validates the HMAC signature**, issues a 24‑hour key (64‑bit hex, e.g. `SPEEDY-XXXX-XXXX-XXXX-XXXX`), stores it in the database, and redirects back to key‑site with `?key=...`.
+5. **Key‑site displays the key** and saves it to `localStorage` for persistence.
+6. **Roblox Loader** calls `POST /api/keys/validate` with the key and HWID:
+   - On first valid use, the key is bound to that HWID.
+   - Subsequent checks require the same HWID.
+   - Keys can have an execution limit (`maxExecutions`).
+7. **Protected scripts** are served only after a valid key is presented.
 
 ---
 
-## UI library API (production)
+## Project Structure
 
-```lua
-local Window = SpeedyUI:CreateWindow({
-  Title = "Speedy Hub", SubTitle = "Greenville",
-  Size = UDim2.fromOffset(560, 420),
-  ToggleKey = Enum.KeyCode.RightShift,
-})
 
-local Tab = Window:AddTab("Farm")
-Tab:AddSection("Performance")
-Tab:AddToggle({ Title = "Auto Drive", Description = "...", Callback = function(v) end })  -- :Set(bool)
-Tab:AddSlider({ Title = "Speed", Min = 50, Max = 300, Default = 150, Callback = function(v) end })  -- :Set(n)
-Tab:AddDropdown({ Title = "Engine", Options = { "Stock", "Sport" }, Callback = function(v) end })  -- :Set(v) :Refresh(t)
-Tab:AddInput({ Title = "Waypoint", Placeholder = "...", Callback = function(text, enter) end })
-Tab:AddKeybind({ Title = "Panic", Default = Enum.KeyCode.F, Callback = function() end })
-Tab:AddButton({ Title = "Unload", Callback = function() Window:Destroy() end })
 
-SpeedyUI:Notify({ Title = "Speedy", Content = "Loaded!", Duration = 4 })
-Window:SelectTab(1)  Window:Toggle()  Window:Destroy()
-```
+Generated directories (`.next`, `out`, `dist`) are ignored by Git.
 
 ---
 
-## Structure
+## Setup & Installation
 
-```
-speedy-hub/
-├── Loader.lua            # game picker + backend handoff (production)
-├── SpeedyUI.lua          # shared interface library (production)
-├── SpeedyUI_Example.lua  # starter template
-├── Main.lua              # legacy template (reference)
-├── dashboard/            # Next.js ops console (deploys to Vercel)
-├── icon.png logo.png     # brand assets
-├── deploy.ps1 / push.ps1 # one-key deploy helpers
-└── vercel.json
-```
+### Prerequisites
 
-`master` = production. `test` = UI experiments (never merge blindly).
+- Node.js ≥ 20
+- npm or yarn
+- PostgreSQL database (e.g., Neon, Supabase, or local)
+- Vercel CLI (optional, for deployment)
+
+### Steps
+
+1. **Clone the repository**
+   
+
+2. **Install dependencies for both projects**
+   
+
+3. **Set up environment variables** (see [Environment Variables](#environment-variables))
+
+4. **Set up the database**
+   
+
+5. **Run the development servers**
+   
+
+6. **Test the flow**  
+   Visit `http://localhost:3001` – you should see the key redemption UI.
+
+---
+
+## Environment Variables
+
+### Dashboard (`.env` in `dashboard/`)
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Used for HMAC signing (at least 32 chars) |
+| `NEXT_PUBLIC_API_URL` | Optional, but used by key-site to point to the backend |
+
+### Key‑site (`.env.local` in `key-site/`)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Backend URL (e.g., `https://dashboard-ten-peach-19.vercel.app`) |
+
+---
+
+## Deployment
+
+Both projects are designed for Vercel. You can deploy them independently.
+
+### Dashboard (API)
+
+
+
+### Key‑site (Frontend)
+
+
+
+### Monorepo Hint
+
+If you deploy from the root, configure `vercel.json` to point each project to its own build directory.
+
+---
+
+## Database
+
+Prisma is used with PostgreSQL. The schema defines:
+
+- `LicenseKey` – stored keys with HWID, expiration, usage count, and activity flag.
+- `KeySession` – tracks checkpoint sessions (IP, token, completion, issued key).
+
+### Common commands
+
+
+
+---
+
+## Roblox Loader
+
+`Loader.lua` is the entry point for the Roblox executor. It:
+
+- Detects HWID via various executor APIs.
+- Reads a saved key from `speedy_hub_key.txt` (using `readfile`/`writefile`).
+- Validates the key with the backend (`POST /api/keys/validate`).
+- If valid, loads the appropriate game script (from `GameTemplate.lua`) and renders the UI.
+
+Key persistence across sessions is handled by file I/O (where supported).
+
+---
+
+## License
+
+This project is proprietary and intended for internal use only.  
+All rights reserved.
 
 ---
 
 ## Contributing
 
-1. Build on `test`, demo with a `_Test.lua` loadstring, screenshot it in-game.
-2. Keep the look: frosted dark glass, Speedy red `#FF1A1A` accents only, Gotham type, Back-ease motion.
-3. PR to `master` with the screenshot attached.
+Internal contributions are welcome. Please open an issue or pull request on the repository. Ensure you follow the existing code style and update tests where applicable.
 
-Discord: **discord.gg/speedy** · License: MIT
+---
+
+## Support
+
+- Discord: [discord.gg/speedy](https://discord.gg/speedy)
+- GitHub Issues: [xyraopsec/speedy-hub/issues](https://github.com/xyraopsec/speedy-hub/issues)
+
+---
+
+**Built with ❤️ for the Speedy Hub community.**
