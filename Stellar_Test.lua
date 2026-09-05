@@ -65,6 +65,10 @@ end
 
 local Logo = SPEEDY_LOGO_ID ~= 0 and ("rbxassetid://" .. SPEEDY_LOGO_ID)
   or githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/icon.png", "speedy-logo.png")
+
+-- Discord server logo for the Community card (upload art, paste asset ID)
+local DISCORD_LOGO_ID = 0
+local DiscordLogo = DISCORD_LOGO_ID ~= 0 and ("rbxassetid://" .. DISCORD_LOGO_ID) or nil
 local execLogo = EXECUTOR_LOGOS[execName]
 local gameThumb = "rbxthumb://type=GameThumbnail&id=" .. tostring(placeId) .. "&w=768&h=432"
 
@@ -72,7 +76,7 @@ local gameThumb = "rbxthumb://type=GameThumbnail&id=" .. tostring(placeId) .. "&
 Library:ChangeTheme("Accent", Color3.fromRGB(255, 46, 46)) -- Speedy red
 
 -- ── Window ───────────────────────────────────────────────────
-local Window = Library:Window({ Name = "Speedy Hub", SubName = gameName, Logo = Logo })
+local Window = Library:Window({ Name = "Speedy Hub", SubName = gameName, Logo = Logo, ExpiresSeconds = 24 * 60 * 60 })
 local Watermark = Library:Watermark("Speedy Hub | " .. username, Logo)
 
 -- Banner helper: big cropped image stacked on top of a section's content
@@ -111,13 +115,20 @@ local ExecCard = Home:Section({ Name = execName, Icon = execLogo, Side = 2 })
 if execLogo then banner(ExecCard, execLogo, 170) end -- tall banner: executor logos get full room
 ExecCard:Label("Running this session")
 
-local JoinBox = Home:Section({ Name = "Community", Side = 1 })
-JoinBox:Button({ Name = "Join Discord", Callback = function()
+local JoinBox = Home:Section({ Name = "Community", Side = 2 })
+if DiscordLogo then banner(JoinBox, DiscordLogo, 110) end
+JoinBox:Label("OFFICIAL DISCORD COMMUNITY")
+JoinBox:Label("Connect, chat, and get support.")
+JoinBox:Button({ Name = "JOIN DISCORD SERVER", Callback = function()
   if setclipboard then setclipboard("discord.gg/speedy") end
 end })
 
-local Credits = Home:Section({ Name = "Credits", Side = 2 })
-Credits:Label("Speedy Hub · loader + dashboard linked")
+local Credits = Home:Section({ Name = "Credits", Side = 1 })
+Credits:Label("Script Developed by:  @[LeadDeveloper]")
+Credits:Label("UI/UX Design by:  @[UIDesigner]")
+Credits:Label("Community Management:  @[ModTeam]")
+Credits:Label("Beta Testing:  [Name1], [Name2], [Name3]")
+Credits:Label("Hosting and Infrastructure:  [ServiceProviderName]")
 
 -- ── Cars ─────────────────────────────────────────────────────
 local Cars = Window:Page({ Name = "Cars", Icon = "car" })
