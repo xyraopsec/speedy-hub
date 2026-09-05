@@ -40,10 +40,10 @@ local T = {
 
   -- Window layers
   WinBg       = Color3.fromRGB(16, 16, 20),   -- shell base (near-black)
-  WinTrans    = 0.12,                          -- 88% opaque = readable glass
+  WinTrans    = 0.25,                          -- glass: hint of game behind
 
-  SideBg      = Color3.fromRGB(10, 10, 14),   -- sidebar slightly darker
-  SideTrans   = 0.05,                          -- almost solid
+  SideBg      = Color3.fromRGB(28, 28, 34),   -- sidebar lifted off pure black
+  SideTrans   = 0.1,
 
   RowBg       = Color3.fromRGB(255, 255, 255), -- row tint color (white)
   RowTrans    = 0.94,                          -- 6% white = subtle lift
@@ -377,17 +377,17 @@ function SpeedyUI:CreateWindow(opts)
     -- Active indicator bar (left edge)
     local bar = New("Frame", {
       AnchorPoint = Vector2.new(0, 0.5),
-      Position = UDim2.new(0, -8, 0.5, 0),   -- sits on left padding edge
+      Position = UDim2.new(0, 7, 0.5, 0),   -- inside the pill, never clipped
       Size = UDim2.fromOffset(3, 0),
       BackgroundColor3 = T.Red,
       BorderSizePixel = 0,
     }, pill)
     corner(bar, 999)
 
-    -- Tab label
-    local bl = Lbl(pill, name, 13, Enum.Font.GothamSemibold, T.TextSub)
-    bl.Size = UDim2.new(1, -8, 1, 0)
-    bl.Position = UDim2.fromOffset(4, 0)
+    -- Tab label (full white, offset clear of the indicator bar)
+    local bl = Lbl(pill, name, 13, Enum.Font.GothamSemibold, T.Text)
+    bl.Size = UDim2.new(1, -21, 1, 0)
+    bl.Position = UDim2.fromOffset(15, 0)
 
     -- Content page for this tab — plain Frame so GroupTransparency never dims text
     local page = New("Frame", {
@@ -433,9 +433,9 @@ function SpeedyUI:CreateWindow(opts)
       -- Indicator bar
       tw(t._bar, 0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out,
         { Size = UDim2.fromOffset(3, on and 16 or 0) })
-      -- Label color
+      -- Label color (always full white; active shown by pill + bar)
       tw(t._label, 0.15, nil, nil, {
-        TextColor3 = on and T.Text or T.TextSub,
+        TextColor3 = T.Text,
         TextTransparency = 0,
       })
       -- Page visibility — instant swap, no GroupTransparency (would dim text)
@@ -508,7 +508,7 @@ function SpeedyUI:CreateWindow(opts)
       Size = UDim2.new(1, 0, 0, 0),
       AutomaticSize = Enum.AutomaticSize.Y,
       BackgroundColor3 = T.RowBg,
-      BackgroundTransparency = T.RowTrans,
+      BackgroundTransparency = 0.86, -- lifted off the window so it reads as a card
       BorderSizePixel = 0,
     }, self._page)
     corner(r, T.RCtl)
@@ -540,7 +540,7 @@ function SpeedyUI:CreateWindow(opts)
     local r = New("TextButton", {
       Size = UDim2.new(1, 0, 0, 36),
       BackgroundColor3 = T.Red,
-      BackgroundTransparency = 0.78,
+      BackgroundTransparency = 0.35, -- vivid red, not muddy
       Text = "", AutoButtonColor = false,
       BorderSizePixel = 0,
     }, self._page)
@@ -552,10 +552,10 @@ function SpeedyUI:CreateWindow(opts)
     l.Size = UDim2.fromScale(1, 1)
 
     r.MouseEnter:Connect(function()
-      tw(r, 0.14, nil, nil, { BackgroundTransparency = 0.6 })
+      tw(r, 0.14, nil, nil, { BackgroundTransparency = 0.22 })
     end)
     r.MouseLeave:Connect(function()
-      tw(r, 0.18, nil, nil, { BackgroundTransparency = 0.78 })
+      tw(r, 0.18, nil, nil, { BackgroundTransparency = 0.35 })
     end)
     r.MouseButton1Click:Connect(function()
       springPop(r)
