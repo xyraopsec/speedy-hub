@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner, unauthorized } from "@/lib/require-owner";
 
 const FALLBACK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"><rect width="150" height="150" fill="%23111"/><text x="75" y="78" text-anchor="middle" fill="%23444" font-family="sans-serif" font-size="14" font-weight="bold">No Image</text></svg>`;
 
@@ -72,6 +73,7 @@ async function fetchUserAvatar(userId: string, size: string): Promise<ArrayBuffe
 }
 
 export async function GET(req: NextRequest) {
+  if (!(await requireOwner())) return unauthorized();
   const type = req.nextUrl.searchParams.get("type") || "game";
   const id = req.nextUrl.searchParams.get("id");
   const size = req.nextUrl.searchParams.get("size") || "128x128";

@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { requireOwner, unauthorized } from "@/lib/require-owner";
 
 // PATCH /api/scripts/action  { id, action: "toggle" | "update", code?, version? }
 export async function PATCH(req: NextRequest) {
+  if (!(await requireOwner())) return unauthorized();
   const { id, action, code, version } = await req.json();
   if (!id || !action) return NextResponse.json({ error: "missing" }, { status: 400 });
 
@@ -30,6 +32,7 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE /api/scripts/action  { id }
 export async function DELETE(req: NextRequest) {
+  if (!(await requireOwner())) return unauthorized();
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "missing id" }, { status: 400 });
 

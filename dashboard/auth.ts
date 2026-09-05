@@ -35,6 +35,27 @@ async function verifyPassword(password: string, stored: string): Promise<boolean
   }
 }
 
+// Brute-force throttle: per-instance attempt ledger with lockout.
+// (Best-effort on serverless — instances don't share memory. The 119-bit
+// random password is what makes guessing infeasible; this stops casual bots.)
+const attempts = new Map<string, { count: number; lockedUntil: number }>();
+
+function clientIp(req: any): string {
+  const fwd = req?.headers?.get?.("x-forwarded-for");
+  if (typeof fwd === "string") return fwd.split(",")[0].trim();
+  return "unknown";
+}
+
+async function fail(ip: string): Promise<null> {
+  const rec = attempts.get(ip) || { count: 0, lockedUntil: 0 };
+  rec.count += 1;
+  if (rec.count >= 10) rec.lockedUntil = Date.now() + 60_000;
+  attempts.set(ip, rec);
+  // Progressive delay burns bot time even below the lockout threshold.
+  await new Promise((r) => setTimeout(r, Math.min(2000, 200 * rec.count)));
+  return null;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 }, // 7 days
@@ -46,14 +67,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        const ip = clientIp(request);
+        const rec = attempts.get(ip);
+        if (rec && rec.lockedUntil > Date.now()) return null;
         const username = String(credentials?.username || "");
         const password = String(credentials?.password || "");
         const wantUser = process.env.OWNER_USERNAME || "";
         const wantHash = process.env.OWNER_PASSWORD_HASH || "";
-        if (!username || !password || !wantUser || !wantHash) return null;
-        if (username !== wantUser) return null;
-        if (!(await verifyPassword(password, wantHash))) return null;
+        if (!username || !password || !wantUser || !wantHash) return fail(ip);
+        if (username !== wantUser) return fail(ip);
+        if (!(await verifyPassword(password, wantHash))) return fail(ip);
+        attempts.delete(ip);
         return { id: "owner", name: "Owner" };
       },
     }),

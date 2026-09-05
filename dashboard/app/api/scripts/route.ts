@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner, unauthorized } from "@/lib/require-owner";
 
 // GET /api/scripts?universeId=1202096104&placeId=3357602286
 export async function GET(req: NextRequest) {
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/scripts  { universeId, name, version, code }
 export async function POST(req: NextRequest) {
+  if (!(await requireOwner())) return unauthorized();
   const { universeId, name, version, code } = await req.json();
   if (!universeId || !code) return NextResponse.json({ error: "missing" }, { status: 400 });
   const game = await prisma.game.findUnique({ where: { universeId: BigInt(universeId) } });

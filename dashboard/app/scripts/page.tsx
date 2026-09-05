@@ -6,6 +6,9 @@ export const dynamic = "force-dynamic";
 
 async function createScript(formData: FormData) {
   "use server";
+  const { auth } = await import("@/auth");
+  const session = await auth().catch(() => null);
+  if (!session?.user) return;
   try {
     const universeIdStr = String(formData.get("universeId") || "").trim();
     const name = String(formData.get("name") || "").trim();
