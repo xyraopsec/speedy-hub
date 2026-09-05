@@ -85,4 +85,22 @@ Settings:Section({ Title = "Loader" })
 Settings:Code({ Title = "Loader loadstring", Code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Loader.lua"))()' })
 Settings:Button({ Title = "Unload UI", Desc = "Destroys the window", Callback = function() Window:Destroy() end })
 
+-- Upstream bug workaround: SerhiiUI never sets BackgroundTransparency on its
+-- TextBox, so it renders opaque white in EVERY theme. Force it transparent
+-- so the themed dark box behind it shows through (scoped to SerhiiUI's GUI).
+pcall(function()
+  local gui = SerhiiUI.ScreenGui
+  if not gui then return end
+  local function fix(inst)
+    if inst:IsA("TextBox") and inst.BackgroundTransparency == 0 then
+      local c = inst.BackgroundColor3
+      if c.R > 0.9 and c.G > 0.9 and c.B > 0.9 then
+        inst.BackgroundTransparency = 1
+      end
+    end
+    for _, ch in ipairs(inst:GetChildren()) do fix(ch) end
+  end
+  fix(gui)
+end)
+
 SerhiiUI:Notify({ Title = "Speedy Hub", Content = "Loaded — enjoy!", Duration = 4 })
