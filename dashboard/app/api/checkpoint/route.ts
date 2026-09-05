@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { generateSessionToken, issueCheckpointKey } from "@/lib/keys";
 import crypto from "crypto";
 
 const CORS_HEADERS = {
@@ -13,76 +12,64 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-// GET /api/checkpoint?token=...
+// GET /api/checkpoint?hwid=...
+// Starts or resumes session, returns status or generates Linkvertise dynamic link
 export async function GET(req: NextRequest) {
-  const token = req.nextUrl.searchParams.get("token");
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+  const hwid = req.nextUrl.searchParams.get("hwid") || null;
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
-  if (!token) {
-    const newToken = generateSessionToken();
-    const session = await prisma.keySession.create({
+  // Check if this IP or HWID already has an active session from today
+  let session = await prisma.keySession.findFirst({
+    where: {
+      OR: [
+        { ip },
+        ...(hwid ? [{ token: hwid }] : []),
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!session) {
+    const rawToken = crypto.randomBytes(16).toString("hex");
+    session = await prisma.keySession.create({
       data: {
-        token: newToken,
+        token: rawToken,
         ip,
         step: 1,
       },
     });
-    return NextResponse.json({ token: session.token, step: session.step }, { headers: CORS_HEADERS });
   }
 
-  const session = await prisma.keySession.findUnique({ where: { token } });
-  if (!session) return NextResponse.json({ error: "Session expired or invalid" }, { status: 404, headers: CORS_HEADERS });
-
-  return NextResponse.json({
-    token: session.token,
-    step: session.step,
-    completed: !!session.completedAt,
-    key: session.keyIssued,
-  }, { headers: CORS_HEADERS });
-}
-
-// POST /api/checkpoint
-// Body: { token, passCode }
-export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
-  const { token, passCode } = body;
-
-  if (!token) return NextResponse.json({ error: "Token required" }, { status: 400, headers: CORS_HEADERS });
-
-  const session = await prisma.keySession.findUnique({ where: { token } });
-  if (!session) return NextResponse.json({ error: "Session expired or invalid" }, { status: 404, headers: CORS_HEADERS });
-
-  if (session.keyIssued) {
-    return NextResponse.json({ ok: true, key: session.keyIssued }, { headers: CORS_HEADERS });
-  }
-
-  // Validate Linkvertise target secret passcode
-  // The user only receives this passcode once they reach Linkvertise's destination
-  // Expected passCode: sha256 of session token + salt or direct validation
-  const expectedCode = crypto
-    .createHash("sha256")
-    .update(`speedy_${session.token}_target_2026`)
-    .digest("hex")
-    .substring(0, 10)
-    .toUpperCase();
-
-  if (!passCode || passCode.trim().toUpperCase() !== expectedCode) {
+  // If already unlocked and key valid
+  if (session.completedAt && session.keyIssued) {
     return NextResponse.json(
-      { error: "Invalid completion pass! You must complete the Linkvertise checkpoint to receive your access code." },
-      { status: 403, headers: CORS_HEADERS }
+      {
+        token: session.token,
+        completed: true,
+        key: session.keyIssued,
+      },
+      { headers: CORS_HEADERS }
     );
   }
 
-  // Issue 24h key
-  const newKey = await issueCheckpointKey(`Linkvertise Checkpoint -> ${session.ip || "User"}`);
-  await prisma.keySession.update({
-    where: { id: session.id },
-    data: {
-      step: 2,
-      completedAt: new Date(),
-      keyIssued: newKey,
-    },
-  });
+  // Create HMAC tamper-proof signature for the callback
+  const secret = process.env.NEXTAUTH_SECRET || "speedy_secret_salt_2026";
+  const sig = crypto.createHmac("sha256", secret).update(`${session.token}:${session.id}`).digest("hex").slice(0, 16);
 
-  return NextResponse.json({ ok: true, key: newKey }, { headers: CORS_HEADERS });
+  // Linkvertise dynamic link target directs to dashboard callback
+  const destinationUrl = `https://dashboard-ten-peach-19.vercel.app/api/checkpoint/callback?token=${session.token}&sig=${sig}`;
+  const encodedDestination = Buffer.from(destinationUrl).toString("base64");
+  
+  // Linkvertise Dynamic URL format:
+  // https://link-to.net/<user_id>/dynamic?r=<base64_target_url>
+  const linkvertiseUrl = `https://link-to.net/9061250/dynamic?r=${encodedDestination}`;
+
+  return NextResponse.json(
+    {
+      token: session.token,
+      completed: false,
+      checkpointUrl: linkvertiseUrl,
+    },
+    { headers: CORS_HEADERS }
+  );
 }

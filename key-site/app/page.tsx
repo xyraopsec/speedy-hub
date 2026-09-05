@@ -4,269 +4,213 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || "https://dashboard-ten-peach-19.vercel.app";
-const LINKVERTISE_URL = "https://link-target.net/9061250/yHHc0NYGlzEm";
 
-function KeyPortalContent() {
+function KeyPortal() {
   const searchParams = useSearchParams();
-  const [token, setToken] = useState<string | null>(null);
   const [key, setKey] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [verifying, setVerifying] = useState<boolean>(false);
+  const [checkpointUrl, setCheckpointUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState<boolean>(false);
-  const [hasStarted, setHasStarted] = useState<boolean>(false);
 
   useEffect(() => {
-    async function initSession() {
+    const urlKey = searchParams.get("key");
+    const urlError = searchParams.get("error");
+
+    if (urlKey) {
+      setKey(urlKey);
+      localStorage.setItem("speedy_unlocked_key", urlKey);
+      setLoading(false);
+      return;
+    }
+
+    if (urlError) {
+      setError(
+        urlError === "invalid_signature"
+          ? "Verification failed: security signature mismatched."
+          : "Session expired or invalid. Please try again."
+      );
+    }
+
+    const saved = localStorage.getItem("speedy_unlocked_key");
+    if (saved) {
+      setKey(saved);
+      setLoading(false);
+      return;
+    }
+
+    // Fetch dynamic checkpoint URL
+    async function loadCheckpoint() {
       try {
-        const paramToken = searchParams.get("token");
-        const paramPass = searchParams.get("pass");
-        const savedToken = paramToken || localStorage.getItem("speedy_standalone_token");
-
-        let url = `${BACKEND_API}/api/checkpoint`;
-        if (savedToken) {
-          url += `?token=${encodeURIComponent(savedToken)}`;
-        }
-
-        const res = await fetch(url);
+        const res = await fetch(`${BACKEND_API}/api/checkpoint`);
         const data = await res.json();
-        
-        if (data.token) {
-          setToken(data.token);
-          localStorage.setItem("speedy_standalone_token", data.token);
-
-          if (data.key) {
-            setKey(data.key);
-          } else if (paramPass) {
-            // Returned automatically with completion passCode from Linkvertise!
-            await autoClaimKey(data.token, paramPass);
-          }
+        if (data.key) {
+          setKey(data.key);
+          localStorage.setItem("speedy_unlocked_key", data.key);
+        } else if (data.checkpointUrl) {
+          setCheckpointUrl(data.checkpointUrl);
         }
       } catch {
-        setError("Unable to connect to key server. Please refresh.");
+        setError("Could not connect to the key server.");
       } finally {
         setLoading(false);
       }
     }
-    initSession();
+
+    loadCheckpoint();
   }, [searchParams]);
 
-  const autoClaimKey = async (sessionToken: string, passCode: string) => {
-    setVerifying(true);
-    setError(null);
-    try {
-      const res = await fetch(`${BACKEND_API}/api/checkpoint`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: sessionToken, passCode }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Checkpoint verification failed.");
-      } else if (data.key) {
-        setKey(data.key);
-      }
-    } catch {
-      setError("Network error validating checkpoint.");
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const handleStartCheckpoint = () => {
-    setHasStarted(true);
-    setError(null);
-    window.open(LINKVERTISE_URL, "_blank");
-  };
-
-  const handleCopyKey = () => {
+  const copyKey = () => {
     if (!key) return;
     try {
-      if (typeof navigator !== "undefined" && navigator?.clipboard?.writeText) {
-        navigator.clipboard.writeText(key).catch(() => fallbackCopy(key));
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(key);
       } else {
-        fallbackCopy(key);
+        const input = document.createElement("textarea");
+        input.value = key;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
       }
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 1800);
     } catch {
-      fallbackCopy(key);
+      // Fallback
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const fallbackCopy = (text: string) => {
-    try {
-      const el = document.createElement("textarea");
-      el.value = text;
-      el.setAttribute("readonly", "");
-      el.style.position = "absolute";
-      el.style.left = "-9999px";
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-    } catch (e) {
-      console.error("Fallback copy failed", e);
+      setTimeout(() => setCopied(false), 1800);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col items-center justify-center p-4 selection:bg-red-500/20 selection:text-white font-sans">
-      <div className="w-full max-w-[420px] bg-[#121215] border border-zinc-800/80 rounded-xl p-6 shadow-xl">
-        {/* Top Header */}
-        <div className="flex items-center justify-between pb-5 mb-5 border-b border-zinc-800/70">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black text-white text-sm">
-              S
-            </div>
-            <div>
-              <div className="text-sm font-bold tracking-tight text-white leading-tight">Speedy Hub</div>
-              <div className="text-[11px] text-zinc-500">Key Generation</div>
-            </div>
-          </div>
-          <a
-            href="https://discord.gg/speedy"
-            target="_blank"
-            rel="noreferrer"
-            className="text-[11px] px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition-colors border border-zinc-700/50"
-          >
-            Discord
-          </a>
+    <main className="min-h-screen bg-[#070709] text-zinc-300 font-mono flex flex-col justify-between p-6 antialiased">
+      {/* Top bar */}
+      <header className="flex items-center justify-between max-w-lg w-full mx-auto text-xs border-b border-zinc-900 pb-4">
+        <div className="flex items-center gap-2 text-zinc-100 font-semibold tracking-wide">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+          SPEEDY HUB
         </div>
+        <a
+          href="https://discord.gg/speedy"
+          target="_blank"
+          rel="noreferrer"
+          className="text-zinc-500 hover:text-zinc-300 transition-colors"
+        >
+          discord / support ↗
+        </a>
+      </header>
 
-        {/* Errors */}
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950/40 border border-red-800/50 text-red-400 text-xs text-center font-medium">
-            {error}
+      {/* Main card */}
+      <div className="max-w-lg w-full mx-auto my-auto py-8">
+        <div className="border border-zinc-800/80 bg-[#0d0d11] p-6 sm:p-8 rounded-lg shadow-2xl space-y-6">
+          <div className="space-y-1">
+            <h1 className="text-base font-semibold text-white tracking-tight">Access Gateway</h1>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Generate a 24-hour hardware-bound license key for Speedy Hub.
+            </p>
           </div>
-        )}
 
-        {/* Body states */}
-        {loading || verifying ? (
-          <div className="py-12 flex flex-col items-center justify-center gap-3">
-            <div className="w-5 h-5 border-2 border-zinc-600 border-t-red-500 rounded-full animate-spin" />
-            <span className="text-xs text-zinc-400 font-mono">
-              {verifying ? "Verifying completion pass..." : "Connecting..."}
-            </span>
-          </div>
-        ) : key ? (
-          <div className="space-y-4">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 text-sm mb-2 font-bold border border-emerald-500/20">
-                ✓
+          {error && (
+            <div className="p-3 rounded bg-red-950/30 border border-red-900/50 text-red-400 text-xs">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="py-8 flex flex-col items-center justify-center gap-2 text-zinc-500 text-xs">
+              <div className="w-4 h-4 border border-zinc-600 border-t-red-500 rounded-full animate-spin"></div>
+              <span>Connecting gateway...</span>
+            </div>
+          ) : key ? (
+            /* State: Key Unlocked */
+            <div className="space-y-4">
+              <div className="p-4 rounded bg-emerald-950/20 border border-emerald-900/40 text-emerald-400 text-xs flex items-center justify-between">
+                <span>Checkpoint passed. 24h key generated.</span>
+                <span className="font-semibold text-[10px] uppercase tracking-wider bg-emerald-500/20 px-2 py-0.5 rounded">Active</span>
               </div>
-              <h2 className="text-sm font-semibold text-white">Key Unlocked</h2>
-              <p className="text-xs text-zinc-400 mt-0.5">Valid for 24 hours. Binds to your executor on launch.</p>
-            </div>
 
-            <div className="p-3 rounded-lg bg-black/60 border border-zinc-800 flex items-center justify-between gap-2 font-mono text-xs">
-              <span className="text-red-400 font-medium truncate select-all">{key}</span>
-              <button
-                onClick={handleCopyKey}
-                className={`px-3 py-1 rounded text-xs font-semibold shrink-0 transition-colors ${
-                  copied
-                    ? "bg-emerald-600 text-white"
-                    : "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700"
-                }`}
-              >
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
-
-            <div className="pt-2 text-center">
-              <button
-                onClick={() => {
-                  localStorage.removeItem("speedy_standalone_token");
-                  window.location.href = window.location.pathname;
-                }}
-                className="text-[11px] text-zinc-500 hover:text-zinc-400 transition-colors"
-              >
-                Get another key
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-sm font-semibold text-white">Complete Sponsor Checkpoint</h2>
-              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                Click below to complete the checkpoint on Linkvertise. When finished, you will be given your completion pass to unlock your 24-hour key.
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800/80 space-y-2 text-xs">
-              <div className="flex justify-between items-center text-zinc-400">
-                <span>Checkpoint</span>
-                <span className="font-mono text-zinc-200">1 of 1</span>
-              </div>
-              <div className="flex justify-between items-center text-zinc-400">
-                <span>Duration</span>
-                <span className="text-zinc-200 font-medium">24 Hours</span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleStartCheckpoint}
-              className="w-full py-2.5 px-4 rounded-lg bg-red-600 hover:bg-red-500 active:scale-[0.99] text-white text-xs font-semibold transition-all shadow-sm"
-            >
-              {hasStarted ? "Reopen Checkpoint" : "Start Checkpoint"}
-            </button>
-
-            {hasStarted && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.currentTarget;
-                  const input = form.elements.namedItem("passCode") as HTMLInputElement;
-                  if (input && token) {
-                    autoClaimKey(token, input.value);
-                  }
-                }}
-                className="pt-2 space-y-2 border-t border-zinc-800/60"
-              >
-                <div className="text-[11px] text-zinc-400">
-                  Enter the verification code shown at the end of the checkpoint:
-                </div>
-                <div className="flex gap-2">
+              <div className="space-y-2">
+                <label className="text-[11px] text-zinc-500 uppercase tracking-wider">Your License Key</label>
+                <div className="flex items-center gap-2">
                   <input
-                    name="passCode"
-                    type="text"
-                    required
-                    placeholder="Enter Code (e.g. A1B2C3D4E5)"
-                    className="flex-1 bg-black/40 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white uppercase font-mono placeholder:text-zinc-600 focus:outline-none focus:border-red-500"
+                    readOnly
+                    value={key}
+                    className="flex-1 bg-black/60 border border-zinc-800 rounded px-3 py-2 text-xs text-white font-mono select-all focus:outline-none"
                   />
                   <button
-                    type="submit"
-                    className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium border border-zinc-700 transition-colors"
+                    onClick={copyKey}
+                    className={`px-4 py-2 rounded text-xs font-semibold transition-all ${
+                      copied
+                        ? "bg-emerald-600 text-white"
+                        : "bg-red-600 hover:bg-red-500 text-white"
+                    }`}
                   >
-                    Claim
+                    {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
-              </form>
-            )}
-          </div>
-        )}
+              </div>
 
-        <div className="mt-5 pt-4 border-t border-zinc-900 text-center">
-          <span className="text-[10px] text-zinc-600 font-mono">Speedy Hub • Secure Key Gateway</span>
+              <div className="text-[11px] text-zinc-500 space-y-1 pt-2 border-t border-zinc-900">
+                <p>1. Open Roblox and execute Speedy Hub.</p>
+                <p>2. Paste key into the prompt and click Verify.</p>
+              </div>
+            </div>
+          ) : (
+            /* State: Start Checkpoint */
+            <div className="space-y-5">
+              <div className="border border-zinc-800/60 bg-black/40 rounded p-4 text-xs space-y-2">
+                <div className="flex justify-between text-zinc-400">
+                  <span>Step</span>
+                  <span className="text-zinc-200">1 of 1</span>
+                </div>
+                <div className="flex justify-between text-zinc-400">
+                  <span>Provider</span>
+                  <span className="text-zinc-200">Linkvertise</span>
+                </div>
+                <div className="flex justify-between text-zinc-400">
+                  <span>Access Duration</span>
+                  <span className="text-zinc-200">24 Hours</span>
+                </div>
+              </div>
+
+              <a
+                href={checkpointUrl || "#"}
+                className={`w-full block text-center py-2.5 rounded text-xs font-semibold transition-all ${
+                  checkpointUrl
+                    ? "bg-red-600 hover:bg-red-500 text-white cursor-pointer"
+                    : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                }`}
+              >
+                Proceed to Checkpoint ↗
+              </a>
+
+              <p className="text-[11px] text-zinc-600 text-center leading-relaxed">
+                Complete the brief sponsor task on Linkvertise. Upon completion, Linkvertise automatically returns you here with your unlocked key.
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="max-w-lg w-full mx-auto text-[11px] text-zinc-600 flex justify-between border-t border-zinc-900 pt-4">
+        <span>speedy-hub / v4.0</span>
+        <span>secure key authorization</span>
+      </footer>
     </main>
   );
 }
 
-export default function HomePage() {
+export default function Page() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-zinc-600 border-t-red-500 rounded-full animate-spin" />
+        <div className="min-h-screen bg-[#070709] flex items-center justify-center">
+          <div className="w-4 h-4 border border-zinc-600 border-t-red-500 rounded-full animate-spin"></div>
         </div>
       }
     >
-      <KeyPortalContent />
+      <KeyPortal />
     </Suspense>
   );
 }
