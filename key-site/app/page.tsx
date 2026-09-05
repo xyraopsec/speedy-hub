@@ -46,6 +46,7 @@ export default function HomePage() {
   }, [countdown]);
 
   const handleStartCheckpoint = () => {
+    window.open("https://link-target.net/9061250/yHHc0NYGlzEm", "_blank");
     setCountdown(10);
     setError(null);
   };
