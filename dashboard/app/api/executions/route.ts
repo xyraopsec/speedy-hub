@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { requireOwner, unauthorized } from "@/lib/require-owner";
 
-// POST /api/executions  { universeId, placeId, userId, username, executor }
+// POST /api/executions  { universeId, placeId, userId, username, executor, key? }
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const { universeId, placeId, userId, username, executor } = body;
@@ -28,11 +28,24 @@ export async function POST(req: NextRequest) {
 
   const script = await prisma.script.findFirst({ where: { gameId: game.id, isActive: true }, orderBy: { updatedAt: "desc" } });
 
+  // Trace the run back to its key when provided (sharing detection:
+  // one key + many userIds = revoke candidate). Invalid keys still log —
+  // the payload gate is the enforcement point, not this route.
+  let licenseKeyId: string | null = null;
+  if (body.key) {
+    const found = await prisma.licenseKey.findUnique({
+      where: { key: String(body.key).trim() },
+      select: { id: true, isActive: true },
+    }).catch(() => null);
+    if (found && found.isActive) licenseKeyId = found.id;
+  }
+
   await prisma.$transaction([
     prisma.execution.create({
       data: {
         gameId: game.id,
         scriptId: script?.id,
+        licenseKeyId,
         placeId: placeId ? BigInt(placeId) : null,
         userId: userId ? String(userId) : null,
         username: username || null,

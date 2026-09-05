@@ -6,14 +6,17 @@ import { auth } from "@/auth";
 //   Public:  GET  /api/games
 //            GET  /api/scripts        (payload fetch; POST deploys -> locked)
 //            POST /api/executions     (run logging; GET reads IPs -> locked)
-//            /login, /api/auth/*
-//   Locked:  all pages, thumbnails, every other API route + method.
+//            POST /api/keys/validate  (key check; management stays locked)
+//            /login, /get-key, /api/auth/*
+//   Locked:  all other pages, thumbnails, every other API route + method.
 function isPublic(pathname: string, method: string): boolean {
   if (pathname === "/login") return true;
+  if (pathname === "/get-key") return true;
   if (pathname.startsWith("/api/auth")) return true;
   if (method === "GET" && pathname === "/api/games") return true;
   if (method === "GET" && pathname === "/api/scripts") return true;
   if (method === "POST" && pathname === "/api/executions") return true;
+  if (method === "POST" && pathname === "/api/keys/validate") return true;
   return false;
 }
 

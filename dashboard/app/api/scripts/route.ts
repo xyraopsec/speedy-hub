@@ -2,11 +2,29 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { requireOwner, unauthorized } from "@/lib/require-owner";
 
-// GET /api/scripts?universeId=1202096104&placeId=3357602286
+// GET /api/scripts?universeId=..&placeId=..&key=..&hwid=..
+// THE anti-bypass point: payloads never leave the server without a valid
+// key+HWID. Any key check inside Lua is UX only — this gate is enforcement.
 export async function GET(req: NextRequest) {
   const uni = req.nextUrl.searchParams.get("universeId");
   const place = req.nextUrl.searchParams.get("placeId");
   if (!uni && !place) return NextResponse.json({ error: "universeId or placeId required" }, { status: 400 });
+
+  const { validateKey } = await import("@/lib/keys");
+  const verdict = await validateKey(
+    req.nextUrl.searchParams.get("key") || "",
+    req.nextUrl.searchParams.get("hwid")
+  );
+  if (!verdict.ok) {
+    return NextResponse.json({ error: verdict.reason }, { status: 403 });
+  }
+  await prisma.licenseKey.update({
+    where: { id: verdict.keyId },
+    data: {
+      executionsUsed: { increment: 1 },
+      lastUsedAt: new Date(),
+    },
+  }).catch(() => null);
 
   const game = await prisma.game.findFirst({
     where: uni ? { universeId: BigInt(uni) } : { placeId: BigInt(place!) },

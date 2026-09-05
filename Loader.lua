@@ -1,16 +1,84 @@
---[[ SPEEDY HUB | Loader v4.0 - Backend-driven game list ]]
+--[[ SPEEDY HUB | Loader v4.0 - Backend-driven game list + Key System ]]
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-getgenv().SpeedyConfig = { Version = "v4.0", Discord = "discord.gg/speedy" }
+getgenv().SpeedyConfig = { Version = "v4.0", Discord = "https://discord.gg/speedy" }
 getgenv().SpeedyBackend = "https://dashboard-ten-peach-19.vercel.app"
 
 local currentGameId = game.GameId
 local currentPlaceId = game.PlaceId
 local backend = getgenv().SpeedyBackend
+
+-- HWID detection for machine binding (safe across executors)
+local function getHWID()
+    local id = nil
+    pcall(function()
+        if gethwid then id = gethwid()
+        elseif getexecutorhwid then id = getexecutorhwid()
+        elseif identifyexecutor then
+            local name = identifyexecutor()
+            id = game:GetService("RbxAnalyticsService"):GetClientId() .. "_" .. tostring(name)
+        else
+            id = game:GetService("RbxAnalyticsService"):GetClientId()
+        end
+    end)
+    return id or ("FALLBACK_" .. tostring(LocalPlayer.UserId))
+end
+
+-- Key storage (file-based persistence so users don't re-enter keys every launch)
+local KEY_FILE = "speedy_hub_key.txt"
+local function loadSavedKey()
+    local key = nil
+    pcall(function()
+        if readfile and isfile and isfile(KEY_FILE) then
+            key = readfile(KEY_FILE)
+            if key then key = string.gsub(key, "%s+", "") end
+        end
+    end)
+    return (key and #key > 0) and key or nil
+end
+
+local function saveKey(key)
+    pcall(function()
+        if writefile then
+            writefile(KEY_FILE, tostring(key))
+        end
+    end)
+end
+
+-- Validate key against backend (checks expiry, hwid binding, executions)
+local function checkKey(keyStr)
+    if not keyStr or #keyStr == 0 then return false, "No key provided" end
+    local cleanKey = string.gsub(keyStr, "%s+", "")
+    local hwid = getHWID()
+    local payload = HttpService:JSONEncode({ key = cleanKey, hwid = hwid })
+    local success, response = pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if req then
+            local res = req({
+                Url = backend .. "/api/keys/validate",
+                Method = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body = payload,
+            })
+            return HttpService:JSONDecode(res.Body)
+        else
+            -- Fallback if executor lacks POST request support
+            return { ok = true, keyId = "compat" }
+        end
+    end)
+    if success and response and response.ok then
+        saveKey(cleanKey)
+        getgenv().SpeedyLicenseKey = cleanKey
+        return true, "Success"
+    else
+        local reason = (response and response.reason) or "Validation failed"
+        return false, reason
+    end
+end
 
 -- Fetch games from backend during loading (with empty fallback)
 local Games = {}
@@ -192,8 +260,17 @@ local function createCard(data,i)
         Phase2.Visible=false ScreenGui:Destroy() Blur:Destroy()
         local HttpService2 = game:GetService("HttpService")
         local plr = game.Players.LocalPlayer
+        local activeKey = getgenv().SpeedyLicenseKey or loadSavedKey() or ""
+        local userHwid = getHWID()
+
         pcall(function()
-            local body = HttpService2:JSONEncode({ universeId=tostring(data.GameId), placeId=tostring(data.PlaceId), userId=tostring(plr.UserId), username=plr.Name })
+            local body = HttpService2:JSONEncode({
+                universeId = tostring(data.GameId),
+                placeId = tostring(data.PlaceId),
+                userId = tostring(plr.UserId),
+                username = plr.Name,
+                key = activeKey,
+            })
             local req = (syn and syn.request) or (http and http.request) or request
             if req then
                 req({ Url=backend.."/api/executions", Method="POST", Headers={["Content-Type"]="application/json"}, Body=body })
@@ -201,20 +278,23 @@ local function createCard(data,i)
                 pcall(function() game:HttpGet(backend.."/api/executions?universeId="..data.GameId.."&placeId="..data.PlaceId.."&userId="..plr.UserId) end)
             end
         end)
+
         local fetched=false
         pcall(function()
-            local url = backend.."/api/scripts?universeId="..tostring(data.GameId)
+            local url = backend.."/api/scripts?universeId="..tostring(data.GameId).."&key="..HttpService2:UrlEncode(activeKey).."&hwid="..HttpService2:UrlEncode(userHwid)
             local res = game:HttpGet(url)
             local dataJ = HttpService2:JSONDecode(res)
             if dataJ and dataJ.code and #dataJ.code>10 then
                 fetched=true
                 pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub", Text="Loaded "..data.Name.." v"..(dataJ.version or "?"), Duration=3}) end)
                 loadstring(dataJ.code)()
+            elseif dataJ and dataJ.error then
+                pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub", Text="Access Denied: " .. tostring(dataJ.error), Duration=5}) end)
             end
         end)
         if not fetched then
-            pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub",Text="No script yet for "..data.Name.." — add in dashboard /scripts",Duration=4}) end)
-            print("[Speedy] No backend script for "..data.Name.." ("..data.GameId..") — add at "..backend.."/scripts")
+            pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title="Speedy Hub",Text="Failed to load payload for "..data.Name,Duration=4}) end)
+            print("[Speedy] No backend script or key invalid for "..data.Name.." ("..data.GameId..")")
         end
     end)
     return Card
@@ -243,37 +323,188 @@ task.spawn(function()
     local waitStart = tick()
     while not gamesReady and (tick() - waitStart) < 3 do task.wait(0.1) end
 
-    -- Transition to Phase 2
+    -- Transition to Key UI or Phase 2
+    local saved = loadSavedKey()
+    local keyValid = false
+    if saved then
+        LoadingLabel.Text="VALIDATING KEY..."
+        local ok, _ = checkKey(saved)
+        keyValid = ok
+    end
+
     TweenService:Create(Phase1,TweenInfo.new(0.4,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{GroupTransparency=1}):Play()
     task.wait(0.38)
     Phase1.Visible=false
 
-    -- Update subtitle with game count
-    HS.Text="CAR & MOTO  •  "..#Games.." GAMES"
+    local function showPhase2()
+        -- Update subtitle with game count
+        HS.Text="CAR & MOTO  •  "..#Games.." GAMES"
 
-    -- Populate cards from backend
-    if #Games > 0 then
-        for i,g in ipairs(Games) do createCard(g,i) end
-    else
-        local empty = Instance.new("TextLabel", Scroll)
-        empty.Size=UDim2.fromOffset(300,60)
-        empty.Position=UDim2.fromOffset(0,80)
-        empty.AnchorPoint=Vector2.new(0.5,0)
-        empty.BackgroundTransparency=1
-        empty.Text="No games configured.\nAdd scripts in the dashboard."
-        empty.Font=Enum.Font.GothamMedium
-        empty.TextSize=13
-        empty.TextColor3=Color3.new(1,1,1)
-        empty.TextTransparency=0.5
-        empty.TextWrapped=true
-        empty.TextXAlignment=Enum.TextXAlignment.Center
-        empty.ZIndex=4
+        -- Populate cards from backend
+        if #Games > 0 then
+            for i,g in ipairs(Games) do createCard(g,i) end
+        else
+            local empty = Instance.new("TextLabel", Scroll)
+            empty.Size=UDim2.fromOffset(300,60)
+            empty.Position=UDim2.fromOffset(0,80)
+            empty.AnchorPoint=Vector2.new(0.5,0)
+            empty.BackgroundTransparency=1
+            empty.Text="No games configured.\nAdd scripts in the dashboard."
+            empty.Font=Enum.Font.GothamMedium
+            empty.TextSize=13
+            empty.TextColor3=Color3.new(1,1,1)
+            empty.TextTransparency=0.5
+            empty.TextWrapped=true
+            empty.TextXAlignment=Enum.TextXAlignment.Center
+            empty.ZIndex=4
+        end
+
+        Phase2.Visible=true Phase2.GroupTransparency=1 MainBox.Size=UDim2.fromOffset(900,640)
+        TweenService:Create(Phase2,TweenInfo.new(0.68,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{GroupTransparency=0}):Play()
+        TweenService:Create(MainBox,TweenInfo.new(0.68,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.fromScale(1,1)}):Play()
+        TweenService:Create(Dim,TweenInfo.new(0.45),{BackgroundTransparency=0.30}):Play()
     end
 
-    Phase2.Visible=true Phase2.GroupTransparency=1 MainBox.Size=UDim2.fromOffset(900,640)
-    TweenService:Create(Phase2,TweenInfo.new(0.68,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{GroupTransparency=0}):Play()
-    TweenService:Create(MainBox,TweenInfo.new(0.68,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.fromScale(1,1)}):Play()
-    TweenService:Create(Dim,TweenInfo.new(0.45),{BackgroundTransparency=0.30}):Play()
+    if keyValid then
+        showPhase2()
+    else
+        -- Show Key System UI
+        local KeyUI = Instance.new("CanvasGroup", ScreenGui)
+        KeyUI.AnchorPoint = Vector2.new(0.5, 0.5)
+        KeyUI.Position = UDim2.fromScale(0.5, 0.5)
+        KeyUI.Size = UDim2.fromOffset(480, 310)
+        KeyUI.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+        KeyUI.BorderSizePixel = 0
+        Instance.new("UICorner", KeyUI).CornerRadius = UDim.new(0, 16)
+        local kStroke = Instance.new("UIStroke", KeyUI)
+        kStroke.Color = Color3.fromRGB(255, 255, 255)
+        kStroke.Transparency = 0.88
+
+        local kHeader = Instance.new("TextLabel", KeyUI)
+        kHeader.Size = UDim2.new(1, -40, 0, 24)
+        kHeader.Position = UDim2.fromOffset(20, 24)
+        kHeader.BackgroundTransparency = 1
+        kHeader.Font = Enum.Font.GothamBlack
+        kHeader.Text = "SPEEDY HUB KEY SYSTEM"
+        kHeader.TextColor3 = Color3.new(1, 1, 1)
+        kHeader.TextSize = 18
+        kHeader.TextXAlignment = Enum.TextXAlignment.Left
+
+        local kDesc = Instance.new("TextLabel", KeyUI)
+        kDesc.Size = UDim2.new(1, -40, 0, 32)
+        kDesc.Position = UDim2.fromOffset(20, 52)
+        kDesc.BackgroundTransparency = 1
+        kDesc.Font = Enum.Font.Gotham
+        kDesc.Text = "Join our Discord to get your free key from the key channel.\nClick 'Copy Discord Link' below."
+        kDesc.TextColor3 = Color3.fromRGB(167, 167, 176)
+        kDesc.TextSize = 12
+        kDesc.TextXAlignment = Enum.TextXAlignment.Left
+        kDesc.TextWrapped = true
+
+        local kBox = Instance.new("TextBox", KeyUI)
+        kBox.Size = UDim2.new(1, -40, 0, 44)
+        kBox.Position = UDim2.fromOffset(20, 100)
+        kBox.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
+        kBox.BorderSizePixel = 0
+        kBox.Font = Enum.Font.Code
+        kBox.PlaceholderText = "SPEEDY-XXXX-XXXX-XXXX-XXXX"
+        kBox.PlaceholderColor3 = Color3.fromRGB(80, 80, 90)
+        kBox.Text = ""
+        kBox.TextColor3 = Color3.new(1, 1, 1)
+        kBox.TextSize = 13
+        kBox.ClearTextOnFocus = false
+        Instance.new("UICorner", kBox).CornerRadius = UDim.new(0, 8)
+        local bStroke = Instance.new("UIStroke", kBox)
+        bStroke.Color = Color3.fromRGB(255, 255, 255)
+        bStroke.Transparency = 0.9
+
+        local kStatus = Instance.new("TextLabel", KeyUI)
+        kStatus.Size = UDim2.new(1, -40, 0, 18)
+        kStatus.Position = UDim2.fromOffset(20, 150)
+        kStatus.BackgroundTransparency = 1
+        kStatus.Font = Enum.Font.GothamMedium
+        kStatus.Text = ""
+        kStatus.TextColor3 = Color3.fromRGB(229, 72, 77)
+        kStatus.TextSize = 11
+        kStatus.TextXAlignment = Enum.TextXAlignment.Left
+
+        local btnDiscord = Instance.new("TextButton", KeyUI)
+        btnDiscord.Size = UDim2.fromOffset(210, 44)
+        btnDiscord.Position = UDim2.fromOffset(20, 180)
+        btnDiscord.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+        btnDiscord.BorderSizePixel = 0
+        btnDiscord.Font = Enum.Font.GothamBold
+        btnDiscord.Text = "Copy Discord Link"
+        btnDiscord.TextColor3 = Color3.new(1, 1, 1)
+        btnDiscord.TextSize = 12
+        Instance.new("UICorner", btnDiscord).CornerRadius = UDim.new(0, 8)
+
+        local btnSubmit = Instance.new("TextButton", KeyUI)
+        btnSubmit.Size = UDim2.fromOffset(210, 44)
+        btnSubmit.Position = UDim2.new(1, -230, 0, 180)
+        btnSubmit.BackgroundColor3 = Color3.fromRGB(229, 72, 77)
+        btnSubmit.BorderSizePixel = 0
+        btnSubmit.Font = Enum.Font.GothamBold
+        btnSubmit.Text = "Verify & Continue"
+        btnSubmit.TextColor3 = Color3.new(1, 1, 1)
+        btnSubmit.TextSize = 12
+        Instance.new("UICorner", btnSubmit).CornerRadius = UDim.new(0, 8)
+
+        local kClose = Instance.new("TextButton", KeyUI)
+        kClose.Size = UDim2.fromOffset(24, 24)
+        kClose.Position = UDim2.new(1, -36, 0, 16)
+        kClose.BackgroundTransparency = 1
+        kClose.Font = Enum.Font.GothamBold
+        kClose.Text = "✕"
+        kClose.TextColor3 = Color3.fromRGB(150, 150, 160)
+        kClose.TextSize = 14
+        kClose.MouseButton1Click:Connect(function()
+            ScreenGui:Destroy()
+            Blur:Destroy()
+        end)
+
+        btnDiscord.MouseButton1Click:Connect(function()
+            local link = getgenv().SpeedyConfig.Discord or "https://discord.gg/speedy"
+            pcall(function()
+                if setclipboard then
+                    setclipboard(link)
+                end
+            end)
+            btnDiscord.Text = "Copied to Clipboard!"
+            task.delay(2, function()
+                if btnDiscord and btnDiscord.Parent then
+                    btnDiscord.Text = "Copy Discord Link"
+                end
+            end)
+        end)
+
+        btnSubmit.MouseButton1Click:Connect(function()
+            local inputKey = kBox.Text
+            if not inputKey or #inputKey == 0 then
+                kStatus.Text = "Please enter your license key."
+                kStatus.TextColor3 = Color3.fromRGB(229, 72, 77)
+                return
+            end
+            btnSubmit.Text = "Checking..."
+            local ok, reason = checkKey(inputKey)
+            if ok then
+                kStatus.TextColor3 = Color3.fromRGB(70, 167, 88)
+                kStatus.Text = "Key Accepted! Loading Hub..."
+                task.wait(0.6)
+                TweenService:Create(KeyUI, TweenInfo.new(0.3), {GroupTransparency = 1}):Play()
+                task.wait(0.3)
+                KeyUI:Destroy()
+                showPhase2()
+            else
+                btnSubmit.Text = "Verify & Continue"
+                kStatus.TextColor3 = Color3.fromRGB(229, 72, 77)
+                kStatus.Text = tostring(reason or "Invalid Key")
+            end
+        end)
+
+        KeyUI.GroupTransparency = 1
+        TweenService:Create(KeyUI, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {GroupTransparency = 0}):Play()
+    end
 end)
 
 game:GetService("UserInputService").InputBegan:Connect(function(inp,gp) if gp then return end if inp.KeyCode==Enum.KeyCode.Escape then if Phase2.Visible and Phase2.GroupTransparency<0.5 then RedDot:Activate() else TweenService:Create(Phase1,TweenInfo.new(0.3),{GroupTransparency=1}):Play() TweenService:Create(Blur,TweenInfo.new(0.3),{Size=0}):Play() TweenService:Create(Dim,TweenInfo.new(0.3),{BackgroundTransparency=1}):Play() task.wait(0.3) ScreenGui:Destroy() Blur:Destroy() end end end)

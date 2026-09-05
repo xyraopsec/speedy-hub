@@ -51,8 +51,13 @@ model Execution {
   country   String?
   success   Boolean  @default(true)
   createdAt DateTime @default(now())
+  // Key that authorized this run (null = pre-key-system runs). Used to
+  // detect sharing: one key + many userIds = revoke candidate.
+  licenseKeyId String?
+  licenseKey   LicenseKey? @relation(fields: [licenseKeyId], references: [id], onDelete: SetNull)
   @@index([gameId, createdAt])
   @@index([createdAt])
+  @@index([licenseKeyId])
 }
 model ApiKey {
   id        String   @id @default(cuid())
@@ -60,4 +65,22 @@ model ApiKey {
   key       String   @unique
   lastUsed  DateTime?
   createdAt DateTime @default(now())
+}
+
+// License keys gate payload delivery. Enforcement lives server-side
+// (GET /api/scripts requires a valid key+HWID) — any check inside Lua
+// is UX only, since the attacker owns the executor.
+model LicenseKey {
+  id             String    @id @default(cuid())
+  key            String    @unique
+  note           String?
+  hwid           String?   // bound machine; null until first use
+  expiresAt      DateTime?
+  maxExecutions  Int?      // null = unlimited
+  executionsUsed Int       @default(0)
+  isActive       Boolean   @default(true)
+  lastUsedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  executions     Execution[]
+  @@index([key, isActive])
 }
