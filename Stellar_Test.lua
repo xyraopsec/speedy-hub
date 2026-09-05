@@ -42,10 +42,17 @@ local username = LocalPlayer and LocalPlayer.DisplayName or "User"
 -- ── Brand assets (GitHub first, manual asset ID as override) ─
 -- Executor logos: add "Name" = "rbxassetid://..." lines as you make them.
 local SPEEDY_LOGO_ID = 0
-local EXECUTOR_LOGOS = {
-  -- ["Delta"] = "rbxassetid://123456789",
-  -- ["Solara"] = "rbxassetid://123456789",
-  -- ["Wave"] = "rbxassetid://123456789",
+-- Executor logo files in the repo (matched case-insensitively).
+-- Add a new PNG + one line here whenever a new executor logo drops.
+local EXECUTOR_FILES = {
+  potassium = "potassium.png",
+  real = "real.png",
+  ronix = "ronix.png",
+  seliware = "seliware.png",
+  solara = "solara.png",
+  synapsez = "synapsez.png",
+  volt = "volt.png",
+  wave = "wave.png",
 }
 
 local function githubImage(url, file)
@@ -66,10 +73,16 @@ end
 local Logo = SPEEDY_LOGO_ID ~= 0 and ("rbxassetid://" .. SPEEDY_LOGO_ID)
   or githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/icon.png", "speedy-logo.png")
 
--- Discord server logo for the Community card (upload art, paste asset ID)
-local DISCORD_LOGO_ID = 0
-local DiscordLogo = DISCORD_LOGO_ID ~= 0 and ("rbxassetid://" .. DISCORD_LOGO_ID) or nil
-local execLogo = EXECUTOR_LOGOS[execName]
+-- Discord server logo lives in the repo (discord-logo.png)
+local DiscordLogo = githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/test/discord-logo.png", "speedy-discord.png")
+
+local function execLogoFor(name)
+  if type(name) ~= "string" then return nil end
+  local f = EXECUTOR_FILES[string.lower(name)]
+  if not f then return nil end
+  return githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/test/" .. f, "speedy-exec-" .. f)
+end
+local execLogo = execLogoFor(execName)
 local gameThumb = "rbxthumb://type=GameThumbnail&id=" .. tostring(placeId) .. "&w=768&h=432"
 
 -- ── Accent ───────────────────────────────────────────────────
