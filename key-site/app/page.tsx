@@ -76,9 +76,35 @@ export default function HomePage() {
 
   const handleCopyKey = () => {
     if (!key) return;
-    navigator.clipboard.writeText(key);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (typeof navigator !== "undefined" && navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(key).catch(() => fallbackCopy(key));
+      } else {
+        fallbackCopy(key);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      fallbackCopy(key);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const fallbackCopy = (text: string) => {
+    try {
+      const el = document.createElement("textarea");
+      el.value = text;
+      el.setAttribute("readonly", "");
+      el.style.position = "absolute";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    } catch (e) {
+      console.error("Fallback copy failed", e);
+    }
   };
 
   return (
