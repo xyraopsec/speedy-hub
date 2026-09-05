@@ -1,7 +1,7 @@
 --[[ SPEEDY UI v2.0 | TEST — loads veryud.lua from the `test` branch.
    Test version only. Production (SpeedyUI.lua on master) is untouched. ]]
 local SpeedyUI = loadstring(game:HttpGet(
-  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/test/veryud.lua?v=2.0"
+  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/test/veryudfix.lua?v=2.0fix"
 ))()
 
 local Window = SpeedyUI:CreateWindow({
