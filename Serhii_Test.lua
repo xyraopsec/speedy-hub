@@ -30,7 +30,7 @@ SerhiiUI:SetTheme("Speedy")
 local Window = SerhiiUI:CreateWindow({
   Title = "Speedy Hub",
   SubTitle = "Driving Empire",
-  Icon = SPEEDY_LOGO_ID ~= 0 and "speedy" or "sparkles",
+  Icon = SPEEDY_LOGO_ID ~= 0 and "speedy" or nil, -- no icon until the real logo: cleaner than a slop sparkle
   Size = UDim2.fromOffset(600, 460),
   ToggleKey = Enum.KeyCode.RightShift,
   ConfigFolder = "SpeedyHub/configs",
@@ -38,18 +38,32 @@ local Window = SerhiiUI:CreateWindow({
 SerhiiUI:SetTheme("Speedy") -- re-apply after build so every element picks it up
 
 -- ── Home ─────────────────────────────────────────────────────
+local gameName = "Unknown game"
+pcall(function()
+  gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+end)
+local execName = "Unknown executor"
+pcall(function()
+  local id = identifyexecutor()
+  if type(id) == "table" then execName = tostring(id[1] or "Unknown executor")
+  elseif type(id) == "string" and id ~= "" then execName = id end
+end)
+
 local Home = Window:Tab({ Title = "Home", Icon = "house" })
 Home:Paragraph({
-  Title = "Welcome to Speedy",
-  Icon = "sparkles",
-  Desc = "Car & moto scripts with one shared look. Everything below is live — flip toggles, drag sliders, switch themes.",
+  Title = gameName,
+  Icon = "info",
+  Desc = "Executor: " .. execName .. "\nTheme: Speedy · RightShift hides the window.",
 })
+Home:Section({ Title = "Quick actions" })
 Home:Button({ Title = "Join Discord", Desc = "Copies invite to clipboard", Icon = "bell", Callback = function()
   if setclipboard then setclipboard("discord.gg/speedy") end
   SerhiiUI:Notify({ Title = "Speedy", Content = "Discord invite copied!" })
 end })
-Home:Divider()
-Home:Text({ Title = "Tip: RightShift hides the window.", Muted = true })
+Home:Button({ Title = "Copy loader", Desc = "Loader loadstring to clipboard", Icon = "copy", Callback = function()
+  if setclipboard then setclipboard('loadstring(game:HttpGet("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Loader.lua"))()') end
+  SerhiiUI:Notify({ Title = "Speedy", Content = "Loader copied!" })
+end })
 
 -- ── Cars ─────────────────────────────────────────────────────
 local Cars = Window:Tab({ Title = "Cars" })
