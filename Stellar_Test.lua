@@ -108,7 +108,7 @@ GameCard:Button({ Name = "Copy place ID", Callback = function()
 end })
 
 local ExecCard = Home:Section({ Name = execName, Icon = execLogo, Side = 2 })
-if execLogo then banner(ExecCard, execLogo, 130) end
+if execLogo then banner(ExecCard, execLogo, 170) end -- tall banner: executor logos get full room
 ExecCard:Label("Running this session")
 
 local JoinBox = Home:Section({ Name = "Community", Side = 1 })
