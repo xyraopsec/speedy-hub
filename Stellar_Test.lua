@@ -64,7 +64,7 @@ local function githubImage(url, file)
 end
 
 local Logo = SPEEDY_LOGO_ID ~= 0 and ("rbxassetid://" .. SPEEDY_LOGO_ID)
-  or githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/icon.png", "speedy-logo.png")
+  or githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/test/icon-v2.png", "speedy-logo.png")
 local execLogo = EXECUTOR_LOGOS[execName]
 local gameThumb = "rbxthumb://type=GameThumbnail&id=" .. tostring(placeId) .. "&w=768&h=432"
 
