@@ -490,7 +490,7 @@ task.spawn(function()
         end)
 
         btnGetKey.MouseButton1Click:Connect(function()
-            local link = backend .. "/get-key"
+            local link = "https://speedy-keys-eight.vercel.app"
             pcall(function()
                 if setclipboard then
                     setclipboard(link)
