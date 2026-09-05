@@ -53,9 +53,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
               <div className="flex items-center gap-3">
                 <span className="mono text-[12px] text-[#62626C] hidden sm:block">v4.0</span>
-                <div className="w-8 h-8 rounded-full bg-[#1A1A20] border border-[#26262C] flex items-center justify-center text-[12px] font-semibold text-[#A7A7B0]">
-                  AD
-                </div>
+                <form
+                  action={async () => {
+                    "use server";
+                    const { signOut } = await import("@/auth");
+                    await signOut({ redirectTo: "/login" });
+                  }}
+                >
+                  <button
+                    type="submit"
+                    title="Sign out"
+                    className="w-8 h-8 rounded-[8px] border border-[#26262C] flex items-center justify-center text-[#A7A7B0] hover:text-white hover:bg-[#17171C] transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                  </button>
+                </form>
               </div>
             </header>
 
