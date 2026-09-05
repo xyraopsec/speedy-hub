@@ -92,56 +92,187 @@ Library:ChangeTheme("Accent", Color3.fromRGB(255, 46, 46)) -- Speedy red
 local Window = Library:Window({ Name = "Speedy Hub", SubName = gameName, Logo = Logo, ExpiresSeconds = 24 * 60 * 60 })
 local Watermark = Library:Watermark("Speedy Hub | " .. username, Logo)
 
--- Banner helper: big cropped image stacked on top of a section's content
-local function banner(section, image, height)
-  local content = section.Items and section.Items.Content and section.Items.Content.Instance
-  if not content or type(image) ~= "string" or image == "" then return nil end
-  local img = Instance.new("ImageLabel")
-  img.Name = "Banner"
-  img.Size = UDim2.new(1, 0, 0, height or 120)
-  img.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-  img.BackgroundTransparency = 0.6
-  img.BorderSizePixel = 0
-  img.Image = image
-  img.ScaleType = Enum.ScaleType.Crop
-  img.LayoutOrder = -1
-  local c = Instance.new("UICorner")
-  c.CornerRadius = UDim.new(0, 8)
-  c.Parent = img
-  img.Parent = content
-  return img
-end
-
--- ── Home ─────────────────────────────────────────────────────
+-- ── Home: hand-built to the mockup ───────────────────────────
 local tabIcons = {}
 local Home = Window:Page({ Name = "Home", Icon = "house" })
 tabIcons[Home] = "house"
 
-local GameCard = Home:Section({ Name = gameName, Icon = gameThumb, Side = 1 })
-banner(GameCard, gameThumb, 130)
-GameCard:Label("Place ID: " .. tostring(placeId))
-GameCard:Button({ Name = "Copy place ID", Callback = function()
+-- ── Home: hand-built to the mockup ───────────────────────────
+-- Stellar stacks sections vertically, so the two-column + full-width
+-- credits layout below is built from raw instances in Stellar's style.
+local column = Home.Items["Column"].Instance
+local INK = Color3.fromRGB(18, 20, 22)
+local flowOrder = 0
+
+local function mk(class, props, parent)
+  local o = Instance.new(class)
+  for k, v in pairs(props) do pcall(function() o[k] = v end) end
+  o.Parent = parent
+  return o
+end
+
+local function flowList(parent, pad)
+  local l = mk("UIListLayout", { Padding = UDim.new(0, pad or 8), SortOrder = Enum.SortOrder.LayoutOrder }, parent)
+  return l
+end
+
+local function flowPad(parent, px)
+  mk("UIPadding", {
+    PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12),
+    PaddingLeft = UDim.new(0, px or 12), PaddingRight = UDim.new(0, px or 12),
+  }, parent)
+end
+
+local function card(parent, order, h)
+  local f = mk("Frame", {
+    Size = UDim2.new(1, 0, 0, h), BackgroundColor3 = INK,
+    BorderSizePixel = 0, LayoutOrder = order,
+  }, parent)
+  mk("UICorner", { CornerRadius = UDim.new(0, 6) }, f)
+  flowList(f, 8)
+  flowPad(f, 12)
+  return f
+end
+
+local function cardHeader(parent, order, icon, title)
+  local h = mk("Frame", {
+    Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1,
+    BorderSizePixel = 0, LayoutOrder = order,
+  }, parent)
+  if type(icon) == "string" and icon ~= "" then
+    local ic = mk("ImageLabel", {
+      Size = UDim2.fromOffset(18, 18), BackgroundTransparency = 1,
+      AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0),
+      Image = icon, BorderSizePixel = 0,
+    }, h)
+    mk("UICorner", { CornerRadius = UDim.new(0, 4) }, ic)
+  end
+  mk("TextLabel", {
+    Size = UDim2.new(1, -26, 1, 0), Position = UDim2.fromOffset(26, 0),
+    BackgroundTransparency = 1, Text = title, Font = Enum.Font.GothamBold,
+    TextSize = 15, TextColor3 = Color3.new(1, 1, 1),
+    TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
+  }, h)
+  return h
+end
+
+local function cardBanner(parent, order, image, height)
+  if type(image) ~= "string" or image == "" then return nil end
+  local img = mk("ImageLabel", {
+    Size = UDim2.new(1, 0, 0, height or 120),
+    BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.6,
+    BorderSizePixel = 0, Image = image, ScaleType = Enum.ScaleType.Crop,
+    LayoutOrder = order,
+  }, parent)
+  mk("UICorner", { CornerRadius = UDim.new(0, 8) }, img)
+  return img
+end
+
+local function cardLabel(parent, order, text, dim)
+  return mk("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1,
+    Text = text, Font = dim and Enum.Font.Gotham or Enum.Font.GothamSemibold,
+    TextSize = dim and 13 or 14,
+    TextColor3 = dim and Color3.fromRGB(165, 165, 175) or Color3.new(1, 1, 1),
+    TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
+    LayoutOrder = order,
+  }, parent)
+end
+
+local function cardButton(parent, order, text, cb)
+  local b = mk("TextButton", {
+    Size = UDim2.new(1, 0, 0, 34), BackgroundColor3 = Color3.fromRGB(30, 32, 38),
+    BorderSizePixel = 0, Text = text, Font = Enum.Font.GothamSemibold,
+    TextSize = 13, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = false,
+    LayoutOrder = order,
+  }, parent)
+  mk("UICorner", { CornerRadius = UDim.new(0, 6) }, b)
+  b.MouseEnter:Connect(function() b.BackgroundColor3 = Color3.fromRGB(40, 42, 50) end)
+  b.MouseLeave:Connect(function() b.BackgroundColor3 = Color3.fromRGB(30, 32, 38) end)
+  b.MouseButton1Click:Connect(function() pcall(cb) end)
+  return b
+end
+
+-- Top row: game square (left) + executor square (right)
+flowOrder = flowOrder + 1
+local topRow = mk("Frame", {
+  Size = UDim2.new(1, 0, 0, 300), BackgroundTransparency = 1,
+  BorderSizePixel = 0, LayoutOrder = flowOrder,
+}, column)
+local gameBox = mk("Frame", {
+  Size = UDim2.new(0.5, -5, 1, 0), BackgroundColor3 = INK,
+  BorderSizePixel = 0,
+}, topRow)
+mk("UICorner", { CornerRadius = UDim.new(0, 6) }, gameBox)
+flowList(gameBox, 8)
+flowPad(gameBox, 12)
+cardHeader(gameBox, 1, gameThumb, gameName)
+cardBanner(gameBox, 2, gameThumb, 130)
+cardLabel(gameBox, 3, "Place ID: " .. tostring(placeId), false)
+cardButton(gameBox, 4, "Copy place ID", function()
   if setclipboard then setclipboard(tostring(placeId)) end
-end })
+end)
 
-local ExecCard = Home:Section({ Name = execName, Icon = execLogo, Side = 2 })
-if execLogo then banner(ExecCard, execLogo, 170) end -- tall banner: executor logos get full room
-ExecCard:Label("Running this session")
+local execBox = mk("Frame", {
+  Size = UDim2.new(0.5, -5, 1, 0), Position = UDim2.new(0.5, 5, 0, 0),
+  BackgroundColor3 = INK, BorderSizePixel = 0,
+}, topRow)
+mk("UICorner", { CornerRadius = UDim.new(0, 6) }, execBox)
+flowList(execBox, 8)
+flowPad(execBox, 12)
+cardHeader(execBox, 1, execLogo, execName)
+if execLogo then cardBanner(execBox, 2, execLogo, 150) end
+cardLabel(execBox, 3, "Running this session", false)
 
-local JoinBox = Home:Section({ Name = "Community", Side = 2 })
-if DiscordLogo then banner(JoinBox, DiscordLogo, 110) end
-JoinBox:Label("OFFICIAL DISCORD COMMUNITY")
-JoinBox:Label("Connect, chat, and get support.")
-JoinBox:Button({ Name = "JOIN DISCORD SERVER", Callback = function()
+-- Second row: Discord card (right, under executor)
+flowOrder = flowOrder + 1
+local midRow = mk("Frame", {
+  Size = UDim2.new(1, 0, 0, 268), BackgroundTransparency = 1,
+  BorderSizePixel = 0, LayoutOrder = flowOrder,
+}, column)
+local discordBox = mk("Frame", {
+  Size = UDim2.new(0.5, -5, 1, 0), Position = UDim2.new(0.5, 5, 0, 0),
+  BackgroundColor3 = INK, BorderSizePixel = 0,
+}, midRow)
+mk("UICorner", { CornerRadius = UDim.new(0, 6) }, discordBox)
+flowList(discordBox, 8)
+flowPad(discordBox, 12)
+if DiscordLogo then cardBanner(discordBox, 1, DiscordLogo, 100) end
+cardLabel(discordBox, 2, "OFFICIAL DISCORD COMMUNITY", false)
+cardLabel(discordBox, 3, "Connect, chat, and get support.", true)
+cardButton(discordBox, 4, "JOIN DISCORD SERVER", function()
   if setclipboard then setclipboard("discord.gg/speedy") end
-end })
+end)
 
-local Credits = Home:Section({ Name = "Credits", Side = 1 })
-Credits:Label("Script Developed by:  @[LeadDeveloper]")
-Credits:Label("UI/UX Design by:  @[UIDesigner]")
-Credits:Label("Community Management:  @[ModTeam]")
-Credits:Label("Beta Testing:  [Name1], [Name2], [Name3]")
-Credits:Label("Hosting and Infrastructure:  [ServiceProviderName]")
+-- Credits: full width along the bottom
+flowOrder = flowOrder + 1
+local creditsBox = card(column, flowOrder, 218)
+cardHeader(creditsBox, 1, execLogo, "Credits")
+local creditRows = {
+  { "Script Developed by:", "@[LeadDeveloper]" },
+  { "UI/UX Design by:", "@[UIDesigner]" },
+  { "Community Management:", "@[ModTeam]" },
+  { "Beta Testing:", "[Name1], [Name2], [Name3]" },
+  { "Hosting and Infrastructure:", "[ServiceProviderName]" },
+}
+for i, row in ipairs(creditRows) do
+  local r = mk("Frame", {
+    Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+    BorderSizePixel = 0, LayoutOrder = 10 + i,
+  }, creditsBox)
+  mk("TextLabel", {
+    Size = UDim2.new(0.55, 0, 1, 0), BackgroundTransparency = 1,
+    Text = row[1], Font = Enum.Font.Gotham, TextSize = 13,
+    TextColor3 = Color3.fromRGB(210, 210, 220),
+    TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
+  }, r)
+  mk("TextLabel", {
+    Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+    Text = row[2], Font = Enum.Font.GothamSemibold, TextSize = 13,
+    TextColor3 = Color3.new(1, 1, 1),
+    TextXAlignment = Enum.TextXAlignment.Right, BorderSizePixel = 0,
+  }, r)
+end
 
 -- ── Cars ─────────────────────────────────────────────────────
 local Cars = Window:Page({ Name = "Cars", Icon = "car" })
