@@ -1,6 +1,9 @@
---[[ SPEEDY x SerhiiUI | branded showcase (TEST BRANCH ONLY)
-   Icons restricted to the author's own demo/docs set so every glyph
-   is guaranteed to resolve. No key gate (lives in the loader).
+--[[ SPEEDY x SerhiiUI | branded showcase v2 (TEST BRANCH ONLY)
+   Redesign notes (from cheat-menu + dark-UI research):
+   - Surfaces are blue-grey dark, never pure black (no halation)
+   - Text is off-white, not pure white (less sear, same contrast)
+   - ONE accent: Speedy red, slightly lightened for dark surfaces
+   - Sections + Dividers create rhythm; every control earns its row
    Production files on master are untouched. ]]
 
 local SerhiiUI = loadstring(game:HttpGet(
@@ -9,35 +12,35 @@ local SerhiiUI = loadstring(game:HttpGet(
 
 -- ── Custom logo ──────────────────────────────────────────────
 -- 1. Upload logo.png to Roblox (Creator Hub > Images) to get an asset ID.
--- 2. Replace 0 below with that ID. Until then the sparkles icon is used.
+-- 2. Replace 0 below with that ID. Until then, no icon (clean text).
 local SPEEDY_LOGO_ID = 0
 if SPEEDY_LOGO_ID ~= 0 then
   SerhiiUI:AddIcons({ speedy = "rbxassetid://" .. SPEEDY_LOGO_ID })
 end
 
--- ── Speedy theme (matches loader red + dashboard mono) ───────
+-- ── Speedy theme v2 ──────────────────────────────────────────
 SerhiiUI:CreateTheme("Speedy", {
-  Background   = Color3.fromHex("#0d0d10"),
-  Element      = Color3.fromHex("#17171c"),
-  ElementHover = Color3.fromHex("#232028"),
-  Text         = Color3.fromHex("#ffffff"),
-  SubText      = Color3.fromHex("#a7a7b0"),
-  Accent       = Color3.fromHex("#ff1a1a"),
+  Background   = Color3.fromHex("#101014"),
+  Element      = Color3.fromHex("#17171d"),
+  ElementHover = Color3.fromHex("#202028"),
+  Text         = Color3.fromHex("#ededf0"),
+  SubText      = Color3.fromHex("#9c9ca8"),
+  Accent       = Color3.fromHex("#ff2e2e"),
 })
 SerhiiUI:SetTheme("Speedy")
 
 -- ── Window ───────────────────────────────────────────────────
 local Window = SerhiiUI:CreateWindow({
   Title = "Speedy Hub",
-  SubTitle = "Driving Empire",
-  Icon = SPEEDY_LOGO_ID ~= 0 and "speedy" or nil, -- no icon until the real logo: cleaner than a slop sparkle
+  SubTitle = "Driving Empire · v1.0",
+  Icon = SPEEDY_LOGO_ID ~= 0 and "speedy" or nil,
   Size = UDim2.fromOffset(600, 460),
   ToggleKey = Enum.KeyCode.RightShift,
   ConfigFolder = "SpeedyHub/configs",
 })
 SerhiiUI:SetTheme("Speedy") -- re-apply after build so every element picks it up
 
--- ── Home ─────────────────────────────────────────────────────
+-- ── Live context (game + executor) ───────────────────────────
 local gameName = "Unknown game"
 pcall(function()
   gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
@@ -49,11 +52,12 @@ pcall(function()
   elseif type(id) == "string" and id ~= "" then execName = id end
 end)
 
+-- ── Home ─────────────────────────────────────────────────────
 local Home = Window:Tab({ Title = "Home", Icon = "house" })
 Home:Paragraph({
   Title = gameName,
   Icon = "info",
-  Desc = "Executor: " .. execName .. "\nTheme: Speedy · RightShift hides the window.",
+  Desc = "Executor: " .. execName .. " · Configs + theme live below.",
 })
 Home:Section({ Title = "Quick actions" })
 Home:Button({ Title = "Join Discord", Desc = "Copies invite to clipboard", Icon = "bell", Callback = function()
@@ -64,23 +68,26 @@ Home:Button({ Title = "Copy loader", Desc = "Loader loadstring to clipboard", Ic
   if setclipboard then setclipboard('loadstring(game:HttpGet("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Loader.lua"))()') end
   SerhiiUI:Notify({ Title = "Speedy", Content = "Loader copied!" })
 end })
+Home:Divider()
+Home:Text({ Title = "RightShift hides the window. Settings tab holds themes + configs.", Muted = true })
 
 -- ── Cars ─────────────────────────────────────────────────────
 local Cars = Window:Tab({ Title = "Cars" })
 Cars:Section({ Title = "Performance" })
 Cars:Toggle({ Title = "Auto Drive", Desc = "Steers the car for you", Icon = "power", Default = false, Flag = "AutoDrive", Callback = function(v) print("AutoDrive:", v) end })
-Cars:Slider({ Title = "Max Speed", Icon = "gauge", Value = { Min = 50, Max = 300, Default = 150 }, Step = 5, Flag = "MaxSpeed", Callback = function(v) print("Speed:", v) end })
+Cars:Slider({ Title = "Max Speed", Desc = "Studs per second", Icon = "gauge", Value = { Min = 50, Max = 300, Default = 150 }, Step = 5, Flag = "MaxSpeed", Callback = function(v) print("Speed:", v) end })
 Cars:Dropdown({ Title = "Engine", Desc = "Power curve preset", Values = { "Stock", "Sport", "Race" }, Default = "Stock", Flag = "Engine", Callback = function(v) print("Engine:", v) end })
 Cars:Section({ Title = "Teleport" })
 Cars:Input({ Title = "Waypoint", Desc = "Named teleport target", Placeholder = "e.g. Dealership", Flag = "Waypoint", Callback = function(text, enter) if enter then print("Go to:", text) end end })
+Cars:Space({ Height = 4 })
 
 -- ── Moto ─────────────────────────────────────────────────────
 local Moto = Window:Tab({ Title = "Moto" })
 Moto:Section({ Title = "Bike setup" })
 Moto:Toggle({ Title = "Wheelie assist", Desc = "Holds the balance point", Default = false, Flag = "Wheelie", Callback = function(v) print("Wheelie:", v) end })
-Moto:Slider({ Title = "Grip", Value = { Min = 0, Max = 100, Default = 70 }, Step = 1, Flag = "Grip", Callback = function(v) print("Grip:", v) end })
-Moto:Keybind({ Title = "Stunt key", Icon = "keyboard", Default = Enum.KeyCode.G, Flag = "StuntKey", Callback = function() print("Stunt!") end })
-Moto:Colorpicker({ Title = "Bike glow", Icon = "paintbrush", Default = Color3.fromRGB(255, 26, 26), Flag = "Glow", Callback = function(c) print("glow:", c) end })
+Moto:Slider({ Title = "Grip", Desc = "Tire friction multiplier", Value = { Min = 0, Max = 100, Default = 70 }, Step = 1, Flag = "Grip", Callback = function(v) print("Grip:", v) end })
+Moto:Keybind({ Title = "Stunt key", Desc = "Triggers while held", Icon = "keyboard", Default = Enum.KeyCode.G, Flag = "StuntKey", Callback = function() print("Stunt!") end })
+Moto:Colorpicker({ Title = "Bike glow", Desc = "Underglow color", Icon = "paintbrush", Default = Color3.fromRGB(255, 46, 46), Flag = "Glow", Callback = function(c) print("glow:", c) end })
 
 -- ── Settings ─────────────────────────────────────────────────
 local Settings = Window:Tab({ Title = "Settings", Icon = "settings" })
@@ -95,9 +102,11 @@ Settings:Button({ Title = "Load config", Desc = "Restores flagged values", Icon 
   Window.Config:Load("default")
   SerhiiUI:Notify({ Title = "Speedy", Content = "Config loaded." })
 end })
-Settings:Section({ Title = "Loader" })
-Settings:Code({ Title = "Loader loadstring", Code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Loader.lua"))()' })
-Settings:Button({ Title = "Unload UI", Desc = "Destroys the window", Callback = function() Window:Destroy() end })
+Settings:Section({ Title = "Session" })
+Settings:Button({ Title = "Minimize", Desc = "Collapse to the floating button", Icon = "minus", Callback = function() Window:Minimize() end })
+Settings:Button({ Title = "Unload UI", Desc = "Destroys the window", Icon = "x", Callback = function() Window:Destroy() end })
+Settings:Divider()
+Settings:Text({ Title = "Speedy Hub · loader + dashboard linked.", Muted = true })
 
 -- Upstream bug workaround: SerhiiUI never sets BackgroundTransparency on its
 -- TextBox, so it renders opaque white in EVERY theme. Force it transparent
@@ -117,4 +126,4 @@ pcall(function()
   fix(gui)
 end)
 
-SerhiiUI:Notify({ Title = "Speedy Hub", Content = "Loaded — enjoy!", Duration = 4 })
+SerhiiUI:Notify({ Title = "Speedy Hub", Content = "Loaded.", Duration = 4 })
