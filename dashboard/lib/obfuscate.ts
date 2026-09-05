@@ -47,9 +47,9 @@ async function callMoonVeil(code: string, options: Record<string, unknown>): Pro
 }
 
 export async function obfuscateScript(code: string): Promise<ObfOutcome> {
-  // Try VM mode first (stronger). Free plan allows limited VM ISAs —
+  // Try VM mode first (stronger). Free plan allows the "skid" VM only —
   // on 403 fall back to defaults (still protected, just milder).
-  const first = await callMoonVeil(code, { compileType: "vm" });
+  const first = await callMoonVeil(code, { compileType: "vm", vmType: "skid" });
   if (first.ok) return first;
   if (!first.error.includes("403") && !first.error.toLowerCase().includes("forbidden")
     && !first.error.toLowerCase().includes("not allowed")) {
