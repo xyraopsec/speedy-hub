@@ -6,6 +6,9 @@ node_modules
 dashboard/.next
 dashboard/out
 dashboard/dist
+key-site/.next
+key-site/out
+key-site/dist
 # prisma
 prisma/migrations
 # env
