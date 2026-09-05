@@ -118,8 +118,8 @@ end
 
 local function flowPad(parent, px)
   mk("UIPadding", {
-    PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12),
-    PaddingLeft = UDim.new(0, px or 12), PaddingRight = UDim.new(0, px or 12),
+    PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10),
+    PaddingLeft = UDim.new(0, px or 10), PaddingRight = UDim.new(0, px or 10),
   }, parent)
 end
 
@@ -129,14 +129,14 @@ local function card(parent, order, h)
     BorderSizePixel = 0, LayoutOrder = order,
   }, parent)
   mk("UICorner", { CornerRadius = UDim.new(0, 6) }, f)
-  flowList(f, 8)
-  flowPad(f, 12)
+  flowList(f, 6)
+  flowPad(f, 10)
   return f
 end
 
 local function cardHeader(parent, order, icon, title)
   local h = mk("Frame", {
-    Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
     BorderSizePixel = 0, LayoutOrder = order,
   }, parent)
   if type(icon) == "string" and icon ~= "" then
@@ -170,7 +170,7 @@ end
 
 local function cardLabel(parent, order, text, dim)
   return mk("TextLabel", {
-    Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 0, 18), BackgroundTransparency = 1,
     Text = text, Font = dim and Enum.Font.Gotham or Enum.Font.GothamSemibold,
     TextSize = dim and 13 or 14,
     TextColor3 = dim and Color3.fromRGB(165, 165, 175) or Color3.new(1, 1, 1),
@@ -181,7 +181,7 @@ end
 
 local function cardButton(parent, order, text, cb)
   local b = mk("TextButton", {
-    Size = UDim2.new(1, 0, 0, 34), BackgroundColor3 = Color3.fromRGB(30, 32, 38),
+    Size = UDim2.new(1, 0, 0, 30), BackgroundColor3 = Color3.fromRGB(30, 32, 38),
     BorderSizePixel = 0, Text = text, Font = Enum.Font.GothamSemibold,
     TextSize = 13, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = false,
     LayoutOrder = order,
@@ -196,7 +196,7 @@ end
 -- Top row: game square (left) + executor square (right)
 flowOrder = flowOrder + 1
 local topRow = mk("Frame", {
-  Size = UDim2.new(1, 0, 0, 300), BackgroundTransparency = 1,
+  Size = UDim2.new(1, 0, 0, 240), BackgroundTransparency = 1,
   BorderSizePixel = 0, LayoutOrder = flowOrder,
 }, column)
 local gameBox = mk("Frame", {
@@ -207,7 +207,7 @@ mk("UICorner", { CornerRadius = UDim.new(0, 6) }, gameBox)
 flowList(gameBox, 8)
 flowPad(gameBox, 12)
 cardHeader(gameBox, 1, gameThumb, gameName)
-cardBanner(gameBox, 2, gameThumb, 130)
+cardBanner(gameBox, 2, gameThumb, 100)
 cardLabel(gameBox, 3, "Place ID: " .. tostring(placeId), false)
 cardButton(gameBox, 4, "Copy place ID", function()
   if setclipboard then setclipboard(tostring(placeId)) end
@@ -221,32 +221,55 @@ mk("UICorner", { CornerRadius = UDim.new(0, 6) }, execBox)
 flowList(execBox, 8)
 flowPad(execBox, 12)
 cardHeader(execBox, 1, execLogo, execName)
-if execLogo then cardBanner(execBox, 2, execLogo, 150) end
+if execLogo then cardBanner(execBox, 2, execLogo, 120) end
 cardLabel(execBox, 3, "Running this session", false)
 
--- Second row: Discord card (right, under executor)
+-- Second row: slim full-width Discord bar
 flowOrder = flowOrder + 1
-local midRow = mk("Frame", {
-  Size = UDim2.new(1, 0, 0, 268), BackgroundTransparency = 1,
+local discordRow = mk("Frame", {
+  Size = UDim2.new(1, 0, 0, 64), BackgroundColor3 = INK,
   BorderSizePixel = 0, LayoutOrder = flowOrder,
 }, column)
-local discordBox = mk("Frame", {
-  Size = UDim2.new(0.5, -5, 1, 0), Position = UDim2.new(0.5, 5, 0, 0),
-  BackgroundColor3 = INK, BorderSizePixel = 0,
-}, midRow)
-mk("UICorner", { CornerRadius = UDim.new(0, 6) }, discordBox)
-flowList(discordBox, 8)
-flowPad(discordBox, 12)
-if DiscordLogo then cardBanner(discordBox, 1, DiscordLogo, 100) end
-cardLabel(discordBox, 2, "OFFICIAL DISCORD COMMUNITY", false)
-cardLabel(discordBox, 3, "Connect, chat, and get support.", true)
-cardButton(discordBox, 4, "JOIN DISCORD SERVER", function()
-  if setclipboard then setclipboard("discord.gg/speedy") end
+mk("UICorner", { CornerRadius = UDim.new(0, 6) }, discordRow)
+if DiscordLogo then
+  local dl = mk("ImageLabel", {
+    Size = UDim2.fromOffset(40, 40), BackgroundTransparency = 1,
+    AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0),
+    Image = DiscordLogo, BorderSizePixel = 0,
+  }, discordRow)
+  mk("UICorner", { CornerRadius = UDim.new(0, 8) }, dl)
+end
+mk("TextLabel", {
+  Size = UDim2.new(1, -230, 0, 18), Position = UDim2.fromOffset(62, 12),
+  BackgroundTransparency = 1, Text = "OFFICIAL DISCORD COMMUNITY",
+  Font = Enum.Font.GothamSemibold, TextSize = 13,
+  TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left,
+  BorderSizePixel = 0,
+}, discordRow)
+mk("TextLabel", {
+  Size = UDim2.new(1, -230, 0, 16), Position = UDim2.fromOffset(62, 32),
+  BackgroundTransparency = 1, Text = "Connect, chat, and get support.",
+  Font = Enum.Font.Gotham, TextSize = 12,
+  TextColor3 = Color3.fromRGB(165, 165, 175),
+  TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
+}, discordRow)
+local dj = mk("TextButton", {
+  Size = UDim2.new(0, 150, 0, 32),
+  AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0),
+  BackgroundColor3 = Color3.fromRGB(30, 32, 38), BorderSizePixel = 0,
+  Text = "JOIN DISCORD", Font = Enum.Font.GothamSemibold, TextSize = 13,
+  TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = false,
+}, discordRow)
+mk("UICorner", { CornerRadius = UDim.new(0, 6) }, dj)
+dj.MouseEnter:Connect(function() dj.BackgroundColor3 = Color3.fromRGB(40, 42, 50) end)
+dj.MouseLeave:Connect(function() dj.BackgroundColor3 = Color3.fromRGB(30, 32, 38) end)
+dj.MouseButton1Click:Connect(function()
+  pcall(function() if setclipboard then setclipboard("discord.gg/speedy") end end)
 end)
 
 -- Credits: full width along the bottom
 flowOrder = flowOrder + 1
-local creditsBox = card(column, flowOrder, 218)
+local creditsBox = card(column, flowOrder, 182)
 cardHeader(creditsBox, 1, execLogo, "Credits")
 local creditRows = {
   { "Script Developed by:", "@[LeadDeveloper]" },
@@ -257,7 +280,7 @@ local creditRows = {
 }
 for i, row in ipairs(creditRows) do
   local r = mk("Frame", {
-    Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 0, 19), BackgroundTransparency = 1,
     BorderSizePixel = 0, LayoutOrder = 10 + i,
   }, creditsBox)
   mk("TextLabel", {
