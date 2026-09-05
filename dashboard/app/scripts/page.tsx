@@ -37,13 +37,16 @@ async function createScript(formData: FormData) {
       game = await prisma.game.create({ data: { name: gameName, universeId, placeId, order: 99 } });
     }
 
-    await prisma.script.create({ data: { gameId: game.id, name: name || game.name, version, code } });
+    const created = await prisma.script.create({ data: { gameId: game.id, name: name || game.name, version, code } });
+    // Obfuscate on deploy (free MoonVeil API; spends 1 of 2 daily reqs).
+    // Previous builds are kept on failure, so the loader never breaks.
+    const { runObfuscation } = await import("@/lib/obfuscate");
+    await runObfuscation(created.id, code).catch((e) => console.error("Obfuscation failed:", e));
     revalidatePath("/scripts");
   } catch (error) {
     console.error("Failed to create script:", error);
   }
 }
-
 export default async function ScriptsPage() {
   const scripts = await prisma.script
     .findMany({

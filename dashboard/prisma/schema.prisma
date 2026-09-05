@@ -25,6 +25,11 @@ model Script {
   name            String
   version         String   @default("1.0.0")
   code            String   @db.Text
+  // Clean source above is owner-only. The loader is served obfuscatedCode.
+  obfuscatedCode    String?  @db.Text
+  obfuscationStatus String   @default("none") // none|processing|ready|failed|unconfigured
+  obfuscationError  String?
+  obfuscatedAt      DateTime?
   isActive        Boolean  @default(true)
   executionsCount Int      @default(0)
   createdAt       DateTime @default(now())

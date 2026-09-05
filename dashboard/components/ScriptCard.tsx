@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Power, PowerOff, Save, X, Copy, Check } from "lucide-react";
+import { Pencil, Trash2, Power, PowerOff, Save, X, Copy, Check, Shield, ShieldAlert, ShieldOff, RefreshCw } from "lucide-react";
 
 type Script = {
   id: string;
@@ -12,6 +12,8 @@ type Script = {
   isActive: boolean;
   executionsCount: number;
   updatedAt: Date;
+  obfuscationStatus?: string;
+  obfuscationError?: string | null;
   game: {
     id: string;
     name: string;
@@ -89,6 +91,42 @@ export default function ScriptCard({ script }: { script: Script }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleObfuscate = async () => {
+    showToast("Protecting… (spends 1 free request)");
+    const res = await fetch("/api/obfuscate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: script.id }),
+    });
+    if (res.ok) {
+      showToast("Protected");
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showToast(data.error || "Protection failed");
+    }
+    startTransition(() => router.refresh());
+  };
+
+  const obStatus = script.obfuscationStatus || "none";
+  const obBadge =
+    obStatus === "ready" ? (
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#46A758]" title="Loader receives the obfuscated build">
+        <Shield className="w-3.5 h-3.5" /> Protected
+      </span>
+    ) : obStatus === "processing" ? (
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#A7A7B0]">
+        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Protecting…
+      </span>
+    ) : obStatus === "failed" ? (
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#f2555a]" title={script.obfuscationError || "Protection failed"}>
+        <ShieldAlert className="w-3.5 h-3.5" /> Failed
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#62626C]" title={obStatus === "unconfigured" ? "Set MOONVEIL_KEY to enable protection" : "No protected build yet"}>
+        <ShieldOff className="w-3.5 h-3.5" /> Unprotected
+      </span>
+    );
+
   return (
     <>
       {toast && (
@@ -127,6 +165,7 @@ export default function ScriptCard({ script }: { script: Script }) {
               <span className={`w-1.5 h-1.5 rounded-full ${script.isActive ? "bg-[#E5484D]" : "bg-[#3A3A42]"}`} />
               {script.isActive ? "Active" : "Archived"}
             </button>
+            {obBadge}
           </div>
 
           <div className="mono text-[11.5px] text-[#62626C] mt-1.5">
@@ -186,6 +225,13 @@ export default function ScriptCard({ script }: { script: Script }) {
           <div className="flex items-center gap-0.5">
             <button onClick={() => setEditing(true)} className="icon-btn" title="Edit script">
               <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleObfuscate}
+              className="icon-btn"
+              title="Re-run protection (spends 1 free request)"
+            >
+              <RefreshCw className="w-4 h-4" />
             </button>
             <button onClick={handleToggle} className="icon-btn" title={script.isActive ? "Deactivate" : "Activate"}>
               {script.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}

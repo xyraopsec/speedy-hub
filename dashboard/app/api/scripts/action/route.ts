@@ -23,6 +23,10 @@ export async function PATCH(req: NextRequest) {
     if (version !== undefined) data.version = version;
     if (Object.keys(data).length === 0) return NextResponse.json({ error: "nothing to update" }, { status: 400 });
     await prisma.script.update({ where: { id }, data });
+    if (code !== undefined) {
+      const { runObfuscation } = await import("@/lib/obfuscate");
+      await runObfuscation(id, code).catch((e) => console.error("Obfuscation failed:", e));
+    }
     revalidatePath("/scripts");
     return NextResponse.json({ ok: true });
   }

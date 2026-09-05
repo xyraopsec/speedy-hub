@@ -14,7 +14,11 @@ export async function GET(req: NextRequest) {
   });
   if (!game || game.scripts.length === 0) return NextResponse.json({ error: "no script" }, { status: 404 });
   const s = game.scripts[0];
-  return NextResponse.json({ game: game.name, version: s.version, code: s.code }, {
+  // The loader only ever receives the obfuscated build. Clean source is
+  // owner-only and never leaves this route. Falls back to clean only when
+  // no protected build exists yet (first deploy before obfuscation lands).
+  const payload = s.obfuscatedCode || s.code;
+  return NextResponse.json({ game: game.name, version: s.version, code: payload, protected: !!s.obfuscatedCode }, {
     headers: { "Cache-Control": "no-store" }
   });
 }
