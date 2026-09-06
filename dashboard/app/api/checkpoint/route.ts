@@ -58,11 +58,12 @@ export async function GET(req: NextRequest) {
 
   // Linkvertise dynamic link target directs to dashboard callback
   const destinationUrl = `https://dashboard-ten-peach-19.vercel.app/api/checkpoint/callback?token=${session.token}&sig=${sig}`;
-  const encodedDestination = Buffer.from(destinationUrl).toString("base64url");
-  
-  // Linkvertise Dynamic URL format:
-  // https://link-to.net/<user_id>/dynamic?r=<base64_target_url>
-  const linkvertiseUrl = `https://link-to.net/9061250/dynamic?r=${encodedDestination}`;
+  // Official Linkvertise dynamic format (from their own snippet):
+  // https://link-to.net/<user_id>/<random>/dynamic/?r=<base64(encodeURI(target))>
+  // The random segment is required — without it Linkvertise treats
+  // /<user_id>/dynamic as a content post and shows "post no longer available".
+  const encodedDestination = Buffer.from(encodeURI(destinationUrl)).toString("base64");
+  const linkvertiseUrl = `https://link-to.net/9061250/${(Math.random() * 1000).toFixed(3)}/dynamic/?r=${encodedDestination}`;
 
   return NextResponse.json(
     {
