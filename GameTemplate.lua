@@ -274,9 +274,13 @@ dj.MouseButton1Click:Connect(function()
   pcall(function() if setclipboard then setclipboard("discord.gg/q5En862zuM") end end)
 end)
 
--- Credits: full width along the bottom
+-- Credits: full width along the bottom (compact, no scroll)
 flowOrder = flowOrder + 1
-local creditsBox = card(column, flowOrder, 182)
+local creditsBox = card(column, flowOrder, 140)
+column.ScrollingEnabled = false
+column.ScrollBarThickness = 0
+column.AutomaticCanvasSize = Enum.AutomaticSize.None
+column.CanvasSize = UDim2.new(0, 0, 0, 0)
 cardHeader(creditsBox, 1, execLogo, "Credits")
 local creditRows = {
   { "Script Developed by:", "@xyra (xyraopsec)", "xyra" },
