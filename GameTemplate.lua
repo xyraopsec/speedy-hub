@@ -276,7 +276,7 @@ end)
 
 -- Credits: full width along the bottom (compact, no scroll)
 flowOrder = flowOrder + 1
-local creditsBox = card(column, flowOrder, 140)
+local creditsBox = card(column, flowOrder, 155)
 column.ScrollingEnabled = false
 column.ScrollBarThickness = 0
 column.AutomaticCanvasSize = Enum.AutomaticSize.None
