@@ -29,16 +29,16 @@ local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Theme: matches Loader v4 (frosted 26,26,30 + Speedy red) ----
+-- Theme: solid obsidian, readable on any game (was 0.6 glass — too dark)
 local Theme = {
   Red        = Color3.fromRGB(255, 26, 26),
   RedSoft    = Color3.fromRGB(255, 62, 62),
-  Bg         = Color3.fromRGB(24, 24, 28),
-  BgTrans    = 0.6, -- darker canvas so text holds contrast
-  Inset      = Color3.fromRGB(12, 12, 15),
+  Bg         = Color3.fromRGB(32, 32, 38),
+  BgTrans    = 0.08, -- was 0.6, made text invisible
+  Inset      = Color3.fromRGB(18, 18, 22),
   RowHover   = Color3.fromRGB(255, 255, 255),
   Text       = Color3.fromRGB(255, 255, 255),
-  TextDim    = Color3.fromRGB(255, 255, 255),
+  TextDim    = Color3.fromRGB(205, 205, 215),
   Stroke     = Color3.fromRGB(255, 255, 255),
   RadiusWin  = 20,
   RadiusCtl  = 10,
