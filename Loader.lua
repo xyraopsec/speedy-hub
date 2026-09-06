@@ -182,6 +182,72 @@ local Divider=Instance.new("Frame",MainBox) Divider.Position=UDim2.fromOffset(28
 local Scroll=Instance.new("ScrollingFrame",MainBox) Scroll.Position=UDim2.fromOffset(28,92) Scroll.Size=UDim2.new(1,-56,1,-110) Scroll.BackgroundTransparency=1 Scroll.BorderSizePixel=0 Scroll.ScrollBarThickness=3 Scroll.ScrollBarImageTransparency=0.6 Scroll.CanvasSize=UDim2.fromOffset(0,0) Scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y Scroll.ZIndex=2
 local Grid=Instance.new("UIGridLayout",Scroll) Grid.CellSize=UDim2.fromOffset(205, 150) Grid.CellPadding=UDim2.fromOffset(16,16) Grid.FillDirectionMaxCells=4 Grid.HorizontalAlignment=Enum.HorizontalAlignment.Center
 local Pad=Instance.new("UIPadding",Scroll) Pad.PaddingTop=UDim.new(0,10) Pad.PaddingBottom=UDim.new(0,12)
+-- Credits footer (compact, no scroll, matches GameTemplate INK 18,20,22)
+local Footer = Instance.new("Frame", MainBox)
+Footer.Size = UDim2.new(1, -56, 0, 32)
+Footer.Position = UDim2.new(0, 28, 1, -40)
+Footer.BackgroundColor3 = Color3.fromRGB(18, 20, 22)
+Footer.BorderSizePixel = 0
+Footer.ZIndex = 2
+Instance.new("UICorner", Footer).CornerRadius = UDim.new(0, 8)
+local FooterGrad = Instance.new("UIGradient", Footer)
+FooterGrad.Color = ColorSequence.new(Color3.fromRGB(28, 28, 32), Color3.fromRGB(18, 20, 22))
+FooterGrad.Rotation = 90
+local FooterStroke = Instance.new("UIStroke", Footer)
+FooterStroke.Color = Color3.fromRGB(255,255,255)
+FooterStroke.Transparency = 0.88
+FooterStroke.Thickness = 1
+local FooterList = Instance.new("UIListLayout", Footer)
+FooterList.FillDirection = Enum.FillDirection.Horizontal
+FooterList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+FooterList.VerticalAlignment = Enum.VerticalAlignment.Center
+FooterList.Padding = UDim.new(0, 10)
+Instance.new("UIPadding", Footer).PaddingTop = UDim.new(0, 4)
+Instance.new("UIPadding", Footer).PaddingBottom = UDim.new(0, 4)
+local function footerChip(iconFile, text)
+    local chip = Instance.new("Frame", Footer)
+    chip.Size = UDim2.new(0, 0, 0, 18)
+    chip.AutomaticSize = Enum.AutomaticSize.X
+    chip.BackgroundTransparency = 1
+    chip.ZIndex = 3
+    local l = Instance.new("UIListLayout", chip)
+    l.FillDirection = Enum.FillDirection.Horizontal
+    l.VerticalAlignment = Enum.VerticalAlignment.Center
+    l.Padding = UDim.new(0, 6)
+    -- avatar if executor supports getcustomasset
+    local avatar
+    pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if req and writefile and getcustomasset and isfile and iconFile then
+            if not isfile("speedy-foot-"..iconFile) then
+                local res = req({Url="https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/"..iconFile, Method="GET"})
+                if res and res.Body and #res.Body>100 then writefile("speedy-foot-"..iconFile, res.Body) end
+            end
+            avatar = getcustomasset("speedy-foot-"..iconFile)
+        end
+    end)
+    if avatar then
+        local img = Instance.new("ImageLabel", chip)
+        img.Size = UDim2.fromOffset(16,16)
+        img.BackgroundTransparency = 1
+        img.Image = avatar
+        img.BorderSizePixel = 0
+        Instance.new("UICorner", img).CornerRadius = UDim.new(1,0)
+    end
+    local lbl = Instance.new("TextLabel", chip)
+    lbl.Size = UDim2.new(0, 0, 0, 14)
+    lbl.AutomaticSize = Enum.AutomaticSize.X
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextSize = 10
+    lbl.TextColor3 = Color3.fromRGB(210,210,220)
+    return chip
+end
+footerChip("xyrapfp.png", "Script: @xyra")
+footerChip("luahook.png", "UI: yes! (luahook)")
+footerChip("raikou.png", "Infra: Raikou")
+footerChip("chinese.png", "Beta: カメルツ [PL/EN]")
 
 local function createCard(data,i)
     local isCurrent=(data.GameId==currentGameId)or(data.PlaceId==currentPlaceId)
