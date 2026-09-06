@@ -91,7 +91,7 @@ function KeyPortal() {
           SPEEDY HUB
         </div>
         <a
-          href="https://discord.gg/speedy"
+          href="https://discord.gg/xJgtyW9z3j"
           target="_blank"
           rel="noreferrer"
           className="text-zinc-500 hover:text-zinc-300 transition-colors"

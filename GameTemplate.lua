@@ -265,7 +265,7 @@ mk("UICorner", { CornerRadius = UDim.new(0, 6) }, dj)
 dj.MouseEnter:Connect(function() dj.BackgroundColor3 = Color3.fromRGB(40, 42, 50) end)
 dj.MouseLeave:Connect(function() dj.BackgroundColor3 = Color3.fromRGB(30, 32, 38) end)
 dj.MouseButton1Click:Connect(function()
-  pcall(function() if setclipboard then setclipboard("discord.gg/speedy") end end)
+  pcall(function() if setclipboard then setclipboard("discord.gg/xJgtyW9z3j") end end)
 end)
 
 -- Credits: full width along the bottom

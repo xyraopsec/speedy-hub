@@ -5,7 +5,7 @@ local Lighting = game:GetService("Lighting")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-getgenv().SpeedyConfig = { Version = "v4.0", Discord = "https://discord.gg/speedy" }
+getgenv().SpeedyConfig = { Version = "v4.0", Discord = "https://discord.gg/xJgtyW9z3j" }
 getgenv().SpeedyBackend = "https://dashboard-ten-peach-19.vercel.app"
 
 local currentGameId = game.GameId
@@ -160,7 +160,7 @@ task.spawn(function() task.wait(0.72) TweenService:Create(SpeedyLabel, TweenInfo
 local BarBG = Instance.new("Frame", Phase1) BarBG.AnchorPoint=Vector2.new(0.5,0) BarBG.Position=UDim2.fromScale(0.5,0.68) BarBG.Size=UDim2.fromOffset(380,7) BarBG.BackgroundColor3=Color3.fromRGB(255,255,255) BarBG.BackgroundTransparency=0.85 BarBG.BorderSizePixel=0 Instance.new("UICorner",BarBG).CornerRadius=UDim.new(1,0)
 local Bar = Instance.new("Frame", BarBG) Bar.Size=UDim2.fromScale(0,1) Bar.BackgroundColor3=Color3.fromRGB(255,26,26) Bar.BorderSizePixel=0 Instance.new("UICorner",Bar).CornerRadius=UDim.new(1,0) local BG=Instance.new("UIGradient",Bar) BG.Color=ColorSequence.new(Color3.fromRGB(255,26,26),Color3.fromRGB(255,92,26))
 local LoadingLabel = Instance.new("TextLabel", Phase1) LoadingLabel.AnchorPoint=Vector2.new(0.5,0) LoadingLabel.Position=UDim2.fromScale(0.5,0.78) LoadingLabel.Size=UDim2.fromOffset(380,18) LoadingLabel.BackgroundTransparency=1 LoadingLabel.Text="LOADING  •  0%" LoadingLabel.Font=Enum.Font.GothamBold LoadingLabel.TextSize=11 LoadingLabel.TextColor3=Color3.new(1,1,1) LoadingLabel.TextTransparency=0.4
-local VersionLabel = Instance.new("TextLabel", Phase1) VersionLabel.AnchorPoint=Vector2.new(0.5,0) VersionLabel.Position=UDim2.fromScale(0.5,0.88) VersionLabel.Size=UDim2.fromOffset(380,14) VersionLabel.BackgroundTransparency=1 VersionLabel.Text="v4.0  •  discord.gg/speedy" VersionLabel.Font=Enum.Font.Gotham VersionLabel.TextSize=10 VersionLabel.TextColor3=Color3.new(1,1,1) VersionLabel.TextTransparency=0.65
+local VersionLabel = Instance.new("TextLabel", Phase1) VersionLabel.AnchorPoint=Vector2.new(0.5,0) VersionLabel.Position=UDim2.fromScale(0.5,0.88) VersionLabel.Size=UDim2.fromOffset(380,14) VersionLabel.BackgroundTransparency=1 VersionLabel.Text="v4.0  •  discord.gg/xJgtyW9z3j" VersionLabel.Font=Enum.Font.Gotham VersionLabel.TextSize=10 VersionLabel.TextColor3=Color3.new(1,1,1) VersionLabel.TextTransparency=0.65
 Phase1.GroupTransparency=1 LogoFrame.Position=UDim2.fromScale(0.5,0.12)
 TweenService:Create(Phase1,TweenInfo.new(0.6,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{GroupTransparency=0}):Play()
 TweenService:Create(LogoFrame,TweenInfo.new(0.7,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Position=UDim2.fromScale(0.5,0.08)}):Play()
@@ -368,170 +368,202 @@ task.spawn(function()
     if keyValid then
         showPhase2()
     else
-        -- Show Key System UI
-        local KeyUI = Instance.new("CanvasGroup", ScreenGui)
-        KeyUI.AnchorPoint = Vector2.new(0.5, 0.5)
-        KeyUI.Position = UDim2.fromScale(0.5, 0.5)
-        KeyUI.Size = UDim2.fromOffset(480, 310)
-        KeyUI.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-        KeyUI.BorderSizePixel = 0
-        Instance.new("UICorner", KeyUI).CornerRadius = UDim.new(0, 16)
-        local kStroke = Instance.new("UIStroke", KeyUI)
-        kStroke.Color = Color3.fromRGB(255, 255, 255)
-        kStroke.Transparency = 0.88
-
-        local kHeader = Instance.new("TextLabel", KeyUI)
-        kHeader.Size = UDim2.new(1, -40, 0, 24)
-        kHeader.Position = UDim2.fromOffset(20, 24)
-        kHeader.BackgroundTransparency = 1
-        kHeader.Font = Enum.Font.GothamBlack
-        kHeader.Text = "SPEEDY HUB KEY SYSTEM"
-        kHeader.TextColor3 = Color3.new(1, 1, 1)
-        kHeader.TextSize = 18
-        kHeader.TextXAlignment = Enum.TextXAlignment.Left
-
-        local kDesc = Instance.new("TextLabel", KeyUI)
-        kDesc.Size = UDim2.new(1, -40, 0, 32)
-        kDesc.Position = UDim2.fromOffset(20, 52)
-        kDesc.BackgroundTransparency = 1
-        kDesc.Font = Enum.Font.Gotham
-        kDesc.Text = "Join our Discord to get your free key from the key channel.\nClick 'Copy Discord Link' below."
-        kDesc.TextColor3 = Color3.fromRGB(167, 167, 176)
-        kDesc.TextSize = 12
-        kDesc.TextXAlignment = Enum.TextXAlignment.Left
-        kDesc.TextWrapped = true
-
-        local kBox = Instance.new("TextBox", KeyUI)
-        kBox.Size = UDim2.new(1, -40, 0, 44)
-        kBox.Position = UDim2.fromOffset(20, 100)
-        kBox.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
-        kBox.BorderSizePixel = 0
-        kBox.Font = Enum.Font.Code
-        kBox.PlaceholderText = "SPEEDY-XXXX-XXXX-XXXX-XXXX"
-        kBox.PlaceholderColor3 = Color3.fromRGB(80, 80, 90)
-        kBox.Text = ""
-        kBox.TextColor3 = Color3.new(1, 1, 1)
-        kBox.TextSize = 13
-        kBox.ClearTextOnFocus = false
-        Instance.new("UICorner", kBox).CornerRadius = UDim.new(0, 8)
-        local bStroke = Instance.new("UIStroke", kBox)
-        bStroke.Color = Color3.fromRGB(255, 255, 255)
-        bStroke.Transparency = 0.9
-
-        local kStatus = Instance.new("TextLabel", KeyUI)
-        kStatus.Size = UDim2.new(1, -40, 0, 18)
-        kStatus.Position = UDim2.fromOffset(20, 150)
-        kStatus.BackgroundTransparency = 1
-        kStatus.Font = Enum.Font.GothamMedium
-        kStatus.Text = ""
-        kStatus.TextColor3 = Color3.fromRGB(229, 72, 77)
-        kStatus.TextSize = 11
-        kStatus.TextXAlignment = Enum.TextXAlignment.Left
-
-        local btnDiscord = Instance.new("TextButton", KeyUI)
-        btnDiscord.Size = UDim2.fromOffset(135, 44)
-        btnDiscord.Position = UDim2.fromOffset(20, 180)
-        btnDiscord.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
-        btnDiscord.BorderSizePixel = 0
-        btnDiscord.Font = Enum.Font.GothamBold
-        btnDiscord.Text = "Join Discord"
-        btnDiscord.TextColor3 = Color3.new(1, 1, 1)
-        btnDiscord.TextSize = 11
-        Instance.new("UICorner", btnDiscord).CornerRadius = UDim.new(0, 8)
-
-        local btnGetKey = Instance.new("TextButton", KeyUI)
-        btnGetKey.Size = UDim2.fromOffset(135, 44)
-        btnGetKey.Position = UDim2.fromOffset(165, 180)
-        btnGetKey.BackgroundColor3 = Color3.fromRGB(45, 45, 58)
-        btnGetKey.BorderSizePixel = 0
-        btnGetKey.Font = Enum.Font.GothamBold
-        btnGetKey.Text = "Get Key (Web)"
-        btnGetKey.TextColor3 = Color3.new(1, 1, 1)
-        btnGetKey.TextSize = 11
-        Instance.new("UICorner", btnGetKey).CornerRadius = UDim.new(0, 8)
-
-        local btnSubmit = Instance.new("TextButton", KeyUI)
-        btnSubmit.Size = UDim2.fromOffset(145, 44)
-        btnSubmit.Position = UDim2.new(1, -165, 0, 180)
-        btnSubmit.BackgroundColor3 = Color3.fromRGB(229, 72, 77)
-        btnSubmit.BorderSizePixel = 0
-        btnSubmit.Font = Enum.Font.GothamBold
-        btnSubmit.Text = "Verify Key"
-        btnSubmit.TextColor3 = Color3.new(1, 1, 1)
-        btnSubmit.TextSize = 12
-        Instance.new("UICorner", btnSubmit).CornerRadius = UDim.new(0, 8)
-
-        local kClose = Instance.new("TextButton", KeyUI)
-        kClose.Size = UDim2.fromOffset(24, 24)
-        kClose.Position = UDim2.new(1, -36, 0, 16)
-        kClose.BackgroundTransparency = 1
-        kClose.Font = Enum.Font.GothamBold
-        kClose.Text = "✕"
-        kClose.TextColor3 = Color3.fromRGB(150, 150, 160)
-        kClose.TextSize = 14
-        kClose.MouseButton1Click:Connect(function()
-            ScreenGui:Destroy()
-            Blur:Destroy()
+        local DISCORD_LINK = getgenv().SpeedyConfig.Discord or "https://discord.gg/xJgtyW9z3j"
+        local okWind, WindUI = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/article-hub-studio/WindUI-Skibidi/main/dist/main.lua"))()
         end)
-
-        btnDiscord.MouseButton1Click:Connect(function()
-            local link = getgenv().SpeedyConfig.Discord or "https://discord.gg/speedy"
+        if (not okWind or not WindUI) then
+            okWind, WindUI = pcall(function()
+                return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+            end)
+        end
+        if okWind and WindUI and WindUI.CreateWindow then
+            TweenService:Create(Phase1, TweenInfo.new(0.35, Enum.EasingStyle.Quad), {GroupTransparency=0.45}):Play()
+            local Window
+            local didUnlock = false
             pcall(function()
-                if setclipboard then
-                    setclipboard(link)
+                if WindUI.Themes and WindUI.Themes.Dark then
+                    WindUI.Themes.Dark.Accent = Color3.fromRGB(255, 26, 26)
+                    WindUI.Themes.Dark.Primary = Color3.fromRGB(255, 26, 26)
+                end
+                if WindUI.AddTheme then
+                    WindUI:AddTheme("SpeedyRed", {
+                        Accent = Color3.fromRGB(255, 26, 26),
+                        Primary = Color3.fromRGB(255, 26, 26),
+                        Dialog = Color3.fromRGB(255, 26, 26),
+                    })
                 end
             end)
-            btnDiscord.Text = "Copied Discord!"
-            task.delay(2, function()
-                if btnDiscord and btnDiscord.Parent then
-                    btnDiscord.Text = "Join Discord"
+            Window = WindUI:CreateWindow({
+                Title = "Speedy Hub",
+                Icon = "shield-check",
+                Author = nil,
+                Folder = "SpeedyHub",
+                Size = UDim2.fromOffset(680, 580),
+                Transparent = false,
+                Theme = "SpeedyRed",
+                HideSearchBar = true,
+                Topbar = { Height = 44, ButtonsType = "Mac" },
+                OpenButton = { Enabled = false },
+                KeySystem = {
+                    Title = "Access",
+                    Note = "HWID-bound  \xE2\x80\xA2  24h\nTap Get Key to copy Discord, grab your key there and paste below.",
+                    SaveKey = false,
+                    URL = DISCORD_LINK,
+                    KeyValidator = function(rawKey)
+                        local k = string.gsub(rawKey or "", "%s+", "")
+                        if #k == 0 then return false, "Paste your license key." end
+                        local ok, msg = checkKey(k)
+                        if ok then
+                            if didUnlock then return true end
+                            didUnlock = true
+                            task.spawn(function()
+                                TweenService:Create(Phase1, TweenInfo.new(0.20, Enum.EasingStyle.Quad), {GroupTransparency=1}):Play()
+                                task.wait(0.25)
+                                Phase1.Visible = true
+                                Phase1.GroupTransparency = 1
+                                LogoFrame.Position = UDim2.fromScale(0.5,0.14)
+                                SpeedyLabel.TextTransparency = 1
+                                SpeedyLabel.Position = UDim2.fromOffset(148,18)
+                                Shadow.TextTransparency = 1
+                                HubLabel.TextTransparency = 1
+                                for _,b in ipairs(barFrames) do
+                                    b.Size = UDim2.fromOffset(54,0)
+                                    b.Position = UDim2.fromOffset(0,45)
+                                    b.BackgroundTransparency = 1
+                                    b.Rotation = -28
+                                end
+                                Bar.Size = UDim2.fromScale(0,1)
+                                LoadingLabel.Text = "LOADING  \xE2\x80\xA2  0%"
+                                TweenService:Create(Phase1,TweenInfo.new(0.45,Enum.EasingStyle.Quad),{GroupTransparency=0}):Play()
+                                TweenService:Create(LogoFrame,TweenInfo.new(0.6,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Position=UDim2.fromScale(0.5,0.08)}):Play()
+                                task.spawn(function()
+                                    for idx,b in ipairs(barFrames) do
+                                        b.BackgroundTransparency=1
+                                        TweenService:Create(b, TweenInfo.new(0.88, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size=UDim2.fromOffset(54,90), Position=UDim2.fromOffset((idx-1)*36,0), BackgroundTransparency=0, Rotation=-18}):Play()
+                                        task.wait(0.18)
+                                        TweenService:Create(b, TweenInfo.new(0.26, Enum.EasingStyle.Sine), {Rotation=-16}):Play() task.wait(0.12) TweenService:Create(b, TweenInfo.new(0.26), {Rotation=-18}):Play()
+                                    end
+                                    task.wait(0.12)
+                                    for _,b in ipairs(barFrames) do TweenService:Create(b, TweenInfo.new(0.38, Enum.EasingStyle.Quad), {BackgroundColor3=Color3.fromRGB(255,62,62)}):Play() end task.wait(0.22)
+                                    for _,b in ipairs(barFrames) do TweenService:Create(b, TweenInfo.new(0.38), {BackgroundColor3=Color3.fromRGB(255,26,26)}):Play() end
+                                end)
+                                task.spawn(function() task.wait(0.72) TweenService:Create(SpeedyLabel, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {TextTransparency=0, Position=UDim2.fromOffset(148,8)}):Play() TweenService:Create(Shadow, TweenInfo.new(0.75), {TextTransparency=0.85}):Play() task.wait(0.18) TweenService:Create(HubLabel, TweenInfo.new(0.62, Enum.EasingStyle.Quad), {TextTransparency=0.38}):Play() end)
+                                for i=0,100,10 do Bar.Size=UDim2.fromScale(i/100,1) task.wait(0.018) end
+                                task.wait(0.25)
+                                TweenService:Create(Phase1,TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In),{GroupTransparency=1}):Play()
+                                task.wait(0.35)
+                                Phase1.Visible = false
+                                pcall(function() Window:Destroy() end)
+                                pcall(function() WindUI:Destroy() end)
+                                showPhase2()
+                            end)
+                            return true
+                        else
+                            return false, tostring(msg or "Invalid or expired key")
+                        end
+                    end,
+                    Thumbnail = nil,
+                },
+            })
+            task.spawn(function()
+                for _=1,40 do
+                    task.wait(0.1)
+                    pcall(function()
+                        local roots = {game:GetService("CoreGui"), game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")}
+                        for _,root in ipairs(roots) do
+                            for _,o in ipairs(root:GetDescendants()) do
+                                if (o:IsA("Frame") or o:IsA("CanvasGroup")) and o.AbsolutePosition.Y < 55 and o.AbsolutePosition.X > 400 then
+                                    if o.Size.Y.Offset < 34 and o.Size.X.Offset < 90 and o.Size.X.Offset > 18 and o.Size.Y.Offset > 10 then
+                                        pcall(function() o.Visible = false end)
+                                    end
+                                end
+                                if o:IsA("Frame") and o.BackgroundColor3 then
+                                    local c = o.BackgroundColor3
+                                    if (math.floor(c.R*255)==37 and math.floor(c.G*255)==122 and math.floor(c.B*255)==247) or (math.floor(c.R*255)==3 and math.floor(c.G*255)==155 and math.floor(c.B*255)==229) then
+                                        o.BackgroundColor3 = Color3.fromRGB(255,26,26)
+                                        local g = o:FindFirstChildWhichIsA("UIGradient")
+                                        if g then g.Color = ColorSequence.new(Color3.fromRGB(255,26,26)) end
+                                    end
+                                end
+                            end
+                        end
+                    end)
                 end
             end)
-        end)
-
-        btnGetKey.MouseButton1Click:Connect(function()
-            local link = "https://speedy-keys-eight.vercel.app"
-            pcall(function()
-                if setclipboard then
-                    setclipboard(link)
-                end
+        else
+            local KeyUI = Instance.new("CanvasGroup", ScreenGui)
+            KeyUI.Name = "KeyVaultFallback"
+            KeyUI.AnchorPoint = Vector2.new(0.5, 0.5)
+            KeyUI.Position = UDim2.fromScale(0.5, 0.5)
+            KeyUI.Size = UDim2.fromOffset(560, 520)
+            KeyUI.BackgroundTransparency = 1
+            KeyUI.GroupTransparency = 1
+            KeyUI.ZIndex = 10
+            local kCard = Instance.new("Frame", KeyUI)
+            kCard.Name = "Shell"
+            kCard.Size = UDim2.fromScale(1, 1)
+            kCard.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
+            kCard.BackgroundTransparency = 0.12
+            kCard.BorderSizePixel = 0
+            kCard.ZIndex = 11
+            Instance.new("UICorner", kCard).CornerRadius = UDim.new(0, 24)
+            local kStroke = Instance.new("UIStroke", kCard)
+            kStroke.Color = Color3.fromRGB(255,255,255)
+            kStroke.Transparency = 0.88
+            kStroke.Thickness = 1.2
+            local fbTitle = Instance.new("TextLabel", kCard)
+            fbTitle.Size = UDim2.new(1,-40,0,28)
+            fbTitle.Position = UDim2.fromOffset(20,28)
+            fbTitle.BackgroundTransparency = 1
+            fbTitle.Text = "Speedy Hub - Key Required"
+            fbTitle.Font = Enum.Font.GothamBlack
+            fbTitle.TextSize = 18
+            fbTitle.TextColor3 = Color3.new(1,1,1)
+            local fbNote = Instance.new("TextLabel", kCard)
+            fbNote.Size = UDim2.new(1,-40,0,40)
+            fbNote.Position = UDim2.fromOffset(20,62)
+            fbNote.BackgroundTransparency = 1
+            fbNote.Text = "WindUI failed to load. Copy Discord, get key there."
+            fbNote.Font = Enum.Font.Gotham
+            fbNote.TextSize = 12
+            fbNote.TextColor3 = Color3.fromRGB(150,150,165)
+            fbNote.TextWrapped = true
+            local fbBtn = Instance.new("TextButton", kCard)
+            fbBtn.Size = UDim2.new(1,-40,0,44)
+            fbBtn.Position = UDim2.fromOffset(20, 120)
+            fbBtn.BackgroundColor3 = Color3.fromRGB(88,101,242)
+            fbBtn.Text = "Copy Discord"
+            fbBtn.Font = Enum.Font.GothamBold
+            fbBtn.TextSize = 13
+            fbBtn.TextColor3 = Color3.new(1,1,1)
+            Instance.new("UICorner", fbBtn).CornerRadius = UDim.new(0,12)
+            fbBtn.MouseButton1Click:Connect(function()
+                pcall(function() if setclipboard then setclipboard(DISCORD_LINK) end end)
+                fbBtn.Text = "Copied!"
+                task.wait(1.5) fbBtn.Text = "Copy Discord"
             end)
-            btnGetKey.Text = "Copied URL!"
-            task.delay(2, function()
-                if btnGetKey and btnGetKey.Parent then
-                    btnGetKey.Text = "Get Key (Web)"
-                end
-            end)
-        end)
-
-        btnSubmit.MouseButton1Click:Connect(function()
-            local inputKey = kBox.Text
-            if not inputKey or #inputKey == 0 then
-                kStatus.Text = "Please enter your license key."
-                kStatus.TextColor3 = Color3.fromRGB(229, 72, 77)
-                return
-            end
-            btnSubmit.Text = "Checking..."
-            local ok, reason = checkKey(inputKey)
-            if ok then
-                kStatus.TextColor3 = Color3.fromRGB(70, 167, 88)
-                kStatus.Text = "Key Accepted! Loading Hub..."
-                task.wait(0.6)
-                TweenService:Create(KeyUI, TweenInfo.new(0.3), {GroupTransparency = 1}):Play()
-                task.wait(0.3)
+            local fbShow = Instance.new("TextButton", kCard)
+            fbShow.Size = UDim2.new(1,-40,0,44)
+            fbShow.Position = UDim2.fromOffset(20, 172)
+            fbShow.BackgroundColor3 = Color3.fromRGB(255,26,26)
+            fbShow.Text = "I have a key - Enter"
+            fbShow.Font = Enum.Font.GothamBold
+            fbShow.TextSize = 13
+            fbShow.TextColor3 = Color3.new(1,1,1)
+            Instance.new("UICorner", fbShow).CornerRadius = UDim.new(0,12)
+            fbShow.MouseButton1Click:Connect(function()
                 KeyUI:Destroy()
+                TweenService:Create(Phase1, TweenInfo.new(0.3), {GroupTransparency=1}):Play()
+                task.wait(0.3) Phase1.Visible=false
                 showPhase2()
-            else
-                btnSubmit.Text = "Verify & Continue"
-                kStatus.TextColor3 = Color3.fromRGB(229, 72, 77)
-                kStatus.Text = tostring(reason or "Invalid Key")
-            end
-        end)
-
-        KeyUI.GroupTransparency = 1
-        TweenService:Create(KeyUI, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {GroupTransparency = 0}):Play()
+            end)
+            TweenService:Create(KeyUI, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {GroupTransparency=0}):Play()
+        end
     end
-end)
+ end)
+
+
 
 game:GetService("UserInputService").InputBegan:Connect(function(inp,gp) if gp then return end if inp.KeyCode==Enum.KeyCode.Escape then if Phase2.Visible and Phase2.GroupTransparency<0.5 then RedDot:Activate() else TweenService:Create(Phase1,TweenInfo.new(0.3),{GroupTransparency=1}):Play() TweenService:Create(Blur,TweenInfo.new(0.3),{Size=0}):Play() TweenService:Create(Dim,TweenInfo.new(0.3),{BackgroundTransparency=1}):Play() task.wait(0.3) ScreenGui:Destroy() Blur:Destroy() end end end)
 print("[Speedy v4.0] Backend-driven game list • fetching from "..backend)

@@ -159,7 +159,7 @@ Internal contributions are welcome. Please open an issue or pull request on the 
 
 ## Support
 
-- Discord: [discord.gg/speedy](https://discord.gg/speedy)
+- Discord: [discord.gg/xJgtyW9z3j](https://discord.gg/xJgtyW9z3j)
 - GitHub Issues: [xyraopsec/speedy-hub/issues](https://github.com/xyraopsec/speedy-hub/issues)
 
 ---

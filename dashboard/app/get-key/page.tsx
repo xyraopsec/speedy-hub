@@ -248,7 +248,7 @@ export default function GetKeyPage() {
           <p className="text-[11px] text-zinc-500">
             Need assistance or direct access?{" "}
             <a
-              href="https://discord.gg/speedy"
+              href="https://discord.gg/xJgtyW9z3j"
               target="_blank"
               rel="noreferrer"
               className="text-red-400 hover:text-red-300 underline font-medium"
