@@ -43,7 +43,7 @@ Tabs.Home:AddButton({
     Title = "Join Discord",
     Description = "Copy invite",
     Callback = function()
-        if setclipboard then setclipboard("discord.gg/xJgtyW9z3j") end
+        if setclipboard then setclipboard("discord.gg/q5En862zuM") end
         Fluent:Notify({ Title = "Speedy", Content = "Discord copied!", Duration = 3 })
     end
 })

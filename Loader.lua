@@ -5,7 +5,7 @@ local Lighting = game:GetService("Lighting")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-getgenv().SpeedyConfig = { Version = "v4.0", Discord = "https://discord.gg/xJgtyW9z3j" }
+getgenv().SpeedyConfig = { Version = "v4.0", Discord = "https://discord.gg/q5En862zuM" }
 getgenv().SpeedyBackend = "https://dashboard-ten-peach-19.vercel.app"
 
 local currentGameId = game.GameId
@@ -160,7 +160,7 @@ task.spawn(function() task.wait(0.72) TweenService:Create(SpeedyLabel, TweenInfo
 local BarBG = Instance.new("Frame", Phase1) BarBG.AnchorPoint=Vector2.new(0.5,0) BarBG.Position=UDim2.fromScale(0.5,0.68) BarBG.Size=UDim2.fromOffset(380,7) BarBG.BackgroundColor3=Color3.fromRGB(255,255,255) BarBG.BackgroundTransparency=0.85 BarBG.BorderSizePixel=0 Instance.new("UICorner",BarBG).CornerRadius=UDim.new(1,0)
 local Bar = Instance.new("Frame", BarBG) Bar.Size=UDim2.fromScale(0,1) Bar.BackgroundColor3=Color3.fromRGB(255,26,26) Bar.BorderSizePixel=0 Instance.new("UICorner",Bar).CornerRadius=UDim.new(1,0) local BG=Instance.new("UIGradient",Bar) BG.Color=ColorSequence.new(Color3.fromRGB(255,26,26),Color3.fromRGB(255,92,26))
 local LoadingLabel = Instance.new("TextLabel", Phase1) LoadingLabel.AnchorPoint=Vector2.new(0.5,0) LoadingLabel.Position=UDim2.fromScale(0.5,0.78) LoadingLabel.Size=UDim2.fromOffset(380,18) LoadingLabel.BackgroundTransparency=1 LoadingLabel.Text="LOADING  •  0%" LoadingLabel.Font=Enum.Font.GothamBold LoadingLabel.TextSize=11 LoadingLabel.TextColor3=Color3.new(1,1,1) LoadingLabel.TextTransparency=0.4
-local VersionLabel = Instance.new("TextLabel", Phase1) VersionLabel.AnchorPoint=Vector2.new(0.5,0) VersionLabel.Position=UDim2.fromScale(0.5,0.88) VersionLabel.Size=UDim2.fromOffset(380,14) VersionLabel.BackgroundTransparency=1 VersionLabel.Text="v4.0  •  discord.gg/xJgtyW9z3j" VersionLabel.Font=Enum.Font.Gotham VersionLabel.TextSize=10 VersionLabel.TextColor3=Color3.new(1,1,1) VersionLabel.TextTransparency=0.65
+local VersionLabel = Instance.new("TextLabel", Phase1) VersionLabel.AnchorPoint=Vector2.new(0.5,0) VersionLabel.Position=UDim2.fromScale(0.5,0.88) VersionLabel.Size=UDim2.fromOffset(380,14) VersionLabel.BackgroundTransparency=1 VersionLabel.Text="v4.0  •  discord.gg/q5En862zuM" VersionLabel.Font=Enum.Font.Gotham VersionLabel.TextSize=10 VersionLabel.TextColor3=Color3.new(1,1,1) VersionLabel.TextTransparency=0.65
 Phase1.GroupTransparency=1 LogoFrame.Position=UDim2.fromScale(0.5,0.12)
 TweenService:Create(Phase1,TweenInfo.new(0.6,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{GroupTransparency=0}):Play()
 TweenService:Create(LogoFrame,TweenInfo.new(0.7,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Position=UDim2.fromScale(0.5,0.08)}):Play()
@@ -368,7 +368,7 @@ task.spawn(function()
     if keyValid then
         showPhase2()
     else
-        local DISCORD_LINK = getgenv().SpeedyConfig.Discord or "https://discord.gg/xJgtyW9z3j"
+        local DISCORD_LINK = getgenv().SpeedyConfig.Discord or "https://discord.gg/q5En862zuM"
         local okWind, WindUI = pcall(function()
             return loadstring(game:HttpGet("https://raw.githubusercontent.com/article-hub-studio/WindUI-Skibidi/main/dist/main.lua"))()
         end)

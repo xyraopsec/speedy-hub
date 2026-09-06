@@ -24,7 +24,7 @@ Home:AddParagraph({
 Home:AddButton({
   Title = "Join Discord",
   Callback = function()
-    if setclipboard then setclipboard("discord.gg/xJgtyW9z3j") end
+    if setclipboard then setclipboard("discord.gg/q5En862zuM") end
     SpeedyUI:Notify({ Title = "Speedy", Content = "Discord invite copied!" })
   end,
 })
