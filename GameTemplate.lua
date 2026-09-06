@@ -55,6 +55,12 @@ local EXECUTOR_FILES = {
   volt = "volt.png",
   wave = "wave.png",
 }
+local CONTRIBUTOR_AVATARS = {
+  xyra = "xyrapfp.png",
+  luahook = "luahook.png",
+  raikou = "raikou.png",
+  kameltz = "chinese.png",
+}
 
 local function githubImage(url, file)
   local asset = nil
@@ -273,11 +279,10 @@ flowOrder = flowOrder + 1
 local creditsBox = card(column, flowOrder, 182)
 cardHeader(creditsBox, 1, execLogo, "Credits")
 local creditRows = {
-  { "Script Developed by:", "@[LeadDeveloper]" },
-  { "UI/UX Design by:", "@[UIDesigner]" },
-  { "Community Management:", "@[ModTeam]" },
-  { "Beta Testing:", "[Name1], [Name2], [Name3]" },
-  { "Hosting and Infrastructure:", "[ServiceProviderName]" },
+  { "Script Developed by:", "@xyra (xyraopsec)", "xyra" },
+  { "UI/UX Design by:", "yes! (luahook)", "luahook" },
+  { "Beta Testing:", "カメルツ (time_distute) [PL, EN]", "kameltz" },
+  { "Hosting and Infrastructure:", "Raikou (raikou_0)", "raikou" },
 }
 for i, row in ipairs(creditRows) do
   local r = mk("Frame", {
@@ -290,12 +295,29 @@ for i, row in ipairs(creditRows) do
     TextColor3 = Color3.fromRGB(210, 210, 220),
     TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
   }, r)
-  mk("TextLabel", {
-    Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-    Text = row[2], Font = Enum.Font.GothamSemibold, TextSize = 13,
-    TextColor3 = Color3.new(1, 1, 1),
-    TextXAlignment = Enum.TextXAlignment.Right, BorderSizePixel = 0,
-  }, r)
+  local avatarKey = row[3]
+  local avatarFile = avatarKey and CONTRIBUTOR_AVATARS[avatarKey]
+  local avatarAsset = avatarFile and githubImage("https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/" .. avatarFile, "speedy-avatar-" .. avatarFile)
+  if avatarAsset then
+    local img = mk("ImageLabel", {
+      Size = UDim2.fromOffset(18, 18), AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0),
+      Image = avatarAsset, BackgroundTransparency = 1, BorderSizePixel = 0,
+    }, r)
+    mk("UICorner", { CornerRadius = UDim.new(1, 0) }, img)
+    mk("TextLabel", {
+      Size = UDim2.new(1, -22, 1, 0), BackgroundTransparency = 1,
+      Text = row[2], Font = Enum.Font.GothamSemibold, TextSize = 13,
+      TextColor3 = Color3.new(1, 1, 1),
+      TextXAlignment = Enum.TextXAlignment.Right, BorderSizePixel = 0,
+    }, r)
+  else
+    mk("TextLabel", {
+      Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+      Text = row[2], Font = Enum.Font.GothamSemibold, TextSize = 13,
+      TextColor3 = Color3.new(1, 1, 1),
+      TextXAlignment = Enum.TextXAlignment.Right, BorderSizePixel = 0,
+    }, r)
+  end
 end
 
 -- ── Cars ─────────────────────────────────────────────────────
