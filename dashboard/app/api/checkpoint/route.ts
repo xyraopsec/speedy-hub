@@ -58,8 +58,9 @@ export async function GET(req: NextRequest) {
 
   // Linkvertise dynamic link — target is our callback endpoint
   const callbackUrl = `https://dashboard-ten-peach-19.vercel.app/api/checkpoint/callback?token=${session.token}&sig=${sig}`;
-  // Working format: https://link-to.net/{userId}/{random}/dynamic?r={base64url(encodeURI(targetUrl))}
-  const encodedDestination = Buffer.from(encodeURI(callbackUrl)).toString('base64url');
+  // WORKING format (latin1 + standard base64) — do NOT change encoding
+  const escapedUrl = callbackUrl.replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16));
+  const encodedDestination = Buffer.from(escapedUrl, 'latin1').toString('base64');
   const linkvertiseUrl = `https://link-to.net/9061250/${(Math.random() * 1000).toFixed(3)}/dynamic?r=${encodedDestination}`;
 
   return NextResponse.json(
