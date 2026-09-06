@@ -56,14 +56,20 @@ export async function GET(req: NextRequest) {
   const secret = process.env.NEXTAUTH_SECRET || "speedy_secret_salt_2026";
   const sig = crypto.createHmac("sha256", secret).update(`${session.token}:${session.id}`).digest("hex").slice(0, 16);
 
-  // Redirect to our checkpoint page which embeds Linkvertise Full Script API
-  const checkpointPageUrl = `https://dashboard-ten-peach-19.vercel.app/checkpoint?token=${session.token}&sig=${sig}`;
+  // Linkvertise dynamic link — target is our callback endpoint
+  const callbackUrl = `https://dashboard-ten-peach-19.vercel.app/api/checkpoint/callback?token=${session.token}&sig=${sig}`;
+  // Working format (from WeAreDevs example):
+  // https://link-to.net/{userId}/{random}/dynamic?r={base64(escapedUrl)}
+  // Use latin1 encoding + encodeURIComponent to match working implementations
+  const escapedUrl = callbackUrl.replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16));
+  const encodedDestination = Buffer.from(escapedUrl, 'latin1').toString('base64');
+  const linkvertiseUrl = `https://link-to.net/9061250/${(Math.random() * 1000).toFixed(3)}/dynamic?r=${encodedDestination}`;
 
   return NextResponse.json(
     {
       token: session.token,
       completed: false,
-      checkpointUrl: checkpointPageUrl,
+      checkpointUrl: linkvertiseUrl,
     },
     { headers: CORS_HEADERS }
   );
