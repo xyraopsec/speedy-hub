@@ -12,6 +12,7 @@ import { auth } from "@/auth";
 function isPublic(pathname: string, method: string): boolean {
   if (pathname === "/login") return true;
   if (pathname === "/get-key") return true;
+  if (pathname === "/checkpoint") return true;
   if (pathname.startsWith("/api/auth")) return true;
   if (pathname.startsWith("/api/checkpoint")) return true;
   if (method === "GET" && pathname === "/api/games") return true;
