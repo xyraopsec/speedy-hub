@@ -30,11 +30,77 @@ if type(Env.Library) == "table" then
   Env.Library = nil
 end
 
+local function gethuiRoot()
+  local ok, h = pcall(function() return gethui() end)
+  if ok and h then return h end
+  return game:GetService("CoreGui")
+end
+local beforeGuis = {}
+pcall(function()
+  for _, g in ipairs(gethuiRoot():GetChildren()) do beforeGuis[g] = true end
+end)
+
 local Library = loadstring(game:HttpGet(
   "https://raw.githubusercontent.com/sametexe001/sametlibs/refs/heads/main/Stellar/Library.lua"
 ))()
-if type(Library) ~= "table" then error("Stellar Library failed to load") end
+if type(Library) ~= "table" then error("Stellar Library did not return a valid table") end
 Env.Library = Library
+
+-- Minimize (RightShift): Stellar has no minimize, so toggle its gui + floating pill
+local stellarGui = nil
+pcall(function()
+  task.wait(0.5)
+  for _, g in ipairs(gethuiRoot():GetChildren()) do
+    if not beforeGuis[g] and g:IsA("ScreenGui") then stellarGui = g break end
+  end
+  if not stellarGui then
+    for _, g in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+      if not beforeGuis[g] and g:IsA("ScreenGui") then stellarGui = g break end
+    end
+  end
+end)
+local uiHidden = false
+local pill = nil
+local function setUiVisible(v)
+  uiHidden = not v
+  pcall(function() if stellarGui then stellarGui.Enabled = v end end)
+  pcall(function() if pill then pill.Visible = not v end end)
+end
+task.spawn(function()
+  pill = Instance.new("TextButton")
+  pill.Name = "SpeedyPill"
+  pill.Size = UDim2.fromOffset(44, 44)
+  pill.Position = UDim2.new(1, -60, 0.5, -22)
+  pill.BackgroundColor3 = Color3.fromRGB(255, 46, 46)
+  pill.BorderSizePixel = 0
+  pill.Text = "S"
+  pill.Font = Enum.Font.GothamBlack
+  pill.TextSize = 20
+  pill.TextColor3 = Color3.new(1, 1, 1)
+  pill.Visible = false
+  pill.AutoButtonColor = false
+  Instance.new("UICorner", pill).CornerRadius = UDim.new(1, 0)
+  pill.Parent = PlayerGui
+  local dragging, ds, sp = false, nil, nil
+  pill.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+      dragging, ds, sp = true, i.Position, pill.Position
+    end
+  end)
+  game:GetService("UserInputService").InputChanged:Connect(function(i)
+    if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+      local d = i.Position - ds
+      pill.Position = UDim2.new(sp.X.Scale, sp.X.Offset + d.X, sp.Y.Scale, sp.Y.Offset + d.Y)
+    end
+  end)
+  game:GetService("UserInputService").InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
+  end)
+  pill.MouseButton1Click:Connect(function() setUiVisible(true) end)
+  game:GetService("UserInputService").InputBegan:Connect(function(i, g)
+    if not g and i.KeyCode == Enum.KeyCode.RightShift then setUiVisible(uiHidden) end
+  end)
+end)
 
 -- ── Live context ─────────────────────────────────────────────
 local gameName, placeId = "Jump for Animals!", game.PlaceId
@@ -188,10 +254,6 @@ end)
 
 flowOrder = flowOrder + 1
 local creditsBox = card(column, flowOrder, 155)
-column.ScrollingEnabled = false
-column.ScrollBarThickness = 0
-column.AutomaticCanvasSize = Enum.AutomaticSize.None
-column.CanvasSize = UDim2.new(0, 0, 0, 0)
 cardHeader(creditsBox, 1, execLogo, "Credits")
 local creditRows = {
   { "Script Developed by:", "@xyra (xyraopsec)", "xyra" },
@@ -355,14 +417,170 @@ Claims:Textbox({ Name = "Redeem code", Placeholder = "Paste code, Enter", Flag =
   end)
 end })
 
+-- ── Auto Farm: steal best egg → plot → place → hatch → equip → sell
+local EggValues = {}
+pcall(function()
+  local Eggs = require(game.ReplicatedStorage.Settings:WaitForChild("Eggs"))
+  local function scan(t, depth, out)
+    if type(t) ~= "table" or depth > 4 then return end
+    for k, v in pairs(t) do
+      if type(v) == "number" and type(k) == "string" then
+        local kl = string.lower(k)
+        if string.find(kl, "value") or string.find(kl, "cash") or string.find(kl, "price") or string.find(kl, "coin") or string.find(kl, "sell") then
+          out.best = math.max(out.best or 0, v)
+        end
+      elseif type(v) == "table" then
+        scan(v, depth + 1, out)
+      end
+    end
+  end
+  local function walk(t, depth)
+    if type(t) ~= "table" or depth > 2 then return end
+    for k, v in pairs(t) do
+      if type(k) == "string" and type(v) == "table" then
+        local o = {}
+        scan(v, 0, o)
+        if o.best and o.best > 0 then EggValues[k] = o.best end
+        walk(v, depth + 1)
+      end
+    end
+  end
+  walk(Eggs, 0)
+end)
+local function eggNameFromPrompt(att)
+  local m = att
+  while m and m.Name ~= "SpawnedEggs" do
+    if m.Parent and m.Parent.Name == "SpawnedEggs" then return m.Name end
+    m = m.Parent
+  end
+  return "?"
+end
+local function bestEggTarget()
+  local h = hrp()
+  if not h then return nil, nil end
+  local hp = h.Position
+  local cands = {}
+  for _, v in ipairs(game.CollectionService:GetTagged("DynamicEggPrompt")) do
+    if string.find(v:GetFullName(), "SpawnedEggs") then
+      local pp = v:FindFirstChild("CollectPrompt") or v:FindFirstChildOfClass("ProximityPrompt")
+      local part = v:IsA("Attachment") and v.Parent
+      if pp and part and part:IsA("BasePart") then
+        local name = eggNameFromPrompt(v)
+        table.insert(cands, { part = part, pp = pp, name = name, val = EggValues[name] or 0, d = (part.Position - hp).Magnitude })
+      end
+    end
+  end
+  if #cands == 0 then return nil, nil end
+  table.sort(cands, function(a, b)
+    if a.val ~= b.val then return a.val > b.val end
+    return a.d < b.d
+  end)
+  return cands[1].part, cands[1].pp, cands[1].name
+end
+local function eggTool()
+  local function findIn(parent)
+    if not parent then return nil end
+    for _, t in ipairs(parent:GetChildren()) do
+      if t:IsA("Tool") and t:GetAttribute("IsEggTool") then return t end
+    end
+    return nil
+  end
+  return findIn(LocalPlayer.Backpack) or findIn(LocalPlayer.Character)
+end
+local function hatchPromptOnPlot(timeoutS)
+  local t0 = os.clock()
+  while os.clock() - t0 < (timeoutS or 40) do
+    local plot = myPlot()
+    if plot then
+      for _, d in ipairs(plot:GetDescendants()) do
+        if d:IsA("ProximityPrompt") then
+          local nm = string.lower(d:GetFullName())
+          if not string.find(nm, "sell") then return d end
+        end
+      end
+    end
+    task.wait(0.5)
+  end
+  return nil
+end
+
+local Auto = Farm:Section({ Name = "Auto Farm", Side = 1 })
+local autoFarm = false
+Auto:Toggle({ Name = "Auto Farm (steal best)", Flag = "AutoFarm", Callback = function(v)
+  autoFarm = v
+  task.spawn(function()
+    while autoFarm do
+      local ok, err = pcall(function()
+        local carried = tonumber(LocalPlayer:GetAttribute("CarriedEggCount")) or 0
+        if carried > 0 then
+          -- Bring home, place, hatch, equip, sell
+          local plot = myPlot()
+          local h = hrp()
+          if plot and h then h.CFrame = plot:GetPivot() + Vector3.new(0, 5, 0) end
+          task.wait(0.6)
+          local tool = eggTool()
+          if tool and plot then
+            local id = tool:GetAttribute("EggId")
+            local gp = plot:GetPivot().Position
+            Remotes.PlaceEggRequest:FireServer(id, Vector3.new(gp.X, gp.Y + 1, gp.Z))
+            task.wait(1)
+          end
+          local hp = hatchPromptOnPlot(40)
+          if hp then
+            hp.HoldDuration = 0
+            if type(fireproximityprompt) == "function" then fireproximityprompt(hp, 1) end
+            task.wait(1.5)
+          end
+          Remotes.PetInventory:FireServer("EquipBest")
+          task.wait(0.5)
+          Remotes.PetInventory:FireServer("SellAll")
+        else
+          -- Steal the best available egg
+          local part, pp, name = bestEggTarget()
+          local h = hrp()
+          if not (part and pp and h) then task.wait(3) return end
+          h.CFrame = part.CFrame + Vector3.new(0, 4, 4)
+          task.wait(0.6)
+          pp.HoldDuration = 0
+          if type(fireproximityprompt) == "function" then fireproximityprompt(pp, 1) end
+          task.wait(1.5)
+        end
+      end)
+      if not ok then task.wait(2) end
+      task.wait(0.5)
+    end
+  end)
+  if not v then notify("Speedy", "Auto farm stopped") end
+end })
+
 -- ── Movement ─────────────────────────────────────────────────
 local Move = Window:Page({ Name = "Movement", Icon = "wind" })
 tabIcons[Move] = "wind"
 local Loco = Move:Section({ Name = "Locomotion", Side = 1 })
+-- Game resets these sometimes: reapply every 1s from stored values
+getgenv()._SpeedyWantWalk = getgenv()._SpeedyWantWalk or 16
+getgenv()._SpeedyWantJump = getgenv()._SpeedyWantJump or 50
+if not getgenv()._SpeedyStatLoop then
+  getgenv()._SpeedyStatLoop = true
+  task.spawn(function()
+    while true do
+      pcall(function()
+        local h = hum()
+        if h then
+          if h.WalkSpeed ~= getgenv()._SpeedyWantWalk then h.WalkSpeed = getgenv()._SpeedyWantWalk end
+          if h.JumpPower ~= getgenv()._SpeedyWantJump then h.JumpPower = getgenv()._SpeedyWantJump h.UseJumpPower = true end
+        end
+      end)
+      task.wait(1)
+    end
+  end)
+end
 Loco:Slider({ Name = "WalkSpeed", Flag = "Walk", Default = 16, Min = 16, Max = 150, Suffix = "", Callback = function(v)
+  getgenv()._SpeedyWantWalk = v
   pcall(function() local h = hum() if h then h.WalkSpeed = v end end)
 end })
 Loco:Slider({ Name = "JumpPower", Flag = "Jump", Default = 50, Min = 50, Max = 300, Suffix = "", Callback = function(v)
+  getgenv()._SpeedyWantJump = v
   pcall(function() local h = hum() if h then h.JumpPower = v h.UseJumpPower = true end end)
 end })
 local infJump = false
