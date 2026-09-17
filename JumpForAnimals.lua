@@ -34,7 +34,7 @@ pcall(function()
 end)
 
 local Library = loadstring(game:HttpGet(
-  "https://raw.githubusercontent.com/sametexe001/sametlibs/refs/heads/main/Stellar/Library.lua"
+  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Stellar.lua"
 ))()
 if type(Library) ~= "table" then error("Stellar Library did not return a valid table") end
 Env.Library = Library
@@ -57,7 +57,6 @@ local pill = nil
 local function setUiVisible(v)
   uiHidden = not v
   pcall(function() if stellarGui then stellarGui.Enabled = v end end)
-  pcall(function() if pill then pill.Visible = not v end end)
 end
 task.spawn(function()
   pill = Instance.new("TextButton")
@@ -70,8 +69,9 @@ task.spawn(function()
   pill.Font = Enum.Font.GothamBlack
   pill.TextSize = 20
   pill.TextColor3 = Color3.new(1, 1, 1)
-  pill.Visible = false
+  pill.Visible = true
   pill.AutoButtonColor = false
+  pill.ZIndex = 999
   Instance.new("UICorner", pill).CornerRadius = UDim.new(1, 0)
   pill.Parent = PlayerGui
   local dragging, ds, sp = false, nil, nil
@@ -89,7 +89,7 @@ task.spawn(function()
   game:GetService("UserInputService").InputEnded:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
   end)
-  pill.MouseButton1Click:Connect(function() setUiVisible(true) end)
+  pill.MouseButton1Click:Connect(function() setUiVisible(uiHidden) end)
   game:GetService("UserInputService").InputBegan:Connect(function(i, g)
     if not g and i.KeyCode == Enum.KeyCode.RightShift then setUiVisible(uiHidden) end
   end)

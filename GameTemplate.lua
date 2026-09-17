@@ -16,7 +16,7 @@ if type(Env.Library) == "table" then
 end
 
 local Source = game:HttpGet(
-  "https://raw.githubusercontent.com/sametexe001/sametlibs/refs/heads/main/Stellar/Library.lua"
+  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/Stellar.lua"
 )
 local Loader, LoadError = loadstring(Source)
 if not Loader then error("Failed to load Stellar Library: " .. tostring(LoadError)) end
