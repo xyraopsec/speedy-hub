@@ -1,4 +1,4 @@
-﻿-- Speedy fork of Stellar by samet (sametexe001/sametlibs). Only change: MakeDraggable unclamped so the window can go off-screen. Upstream: https://github.com/sametexe001/sametlibs/tree/main/Stellar
+-- Speedy fork of Stellar by samet (sametexe001/sametlibs). Only change: MakeDraggable unclamped so the window can go off-screen. Upstream: https://github.com/sametexe001/sametlibs/tree/main/Stellar
 -- Made by samet
 -- Customer has done AI modifications on this UI, do not blame me for the code.
 
