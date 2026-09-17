@@ -15,6 +15,13 @@
    - WalkSpeed set (60 ok), Fly BodyVelocity (1->51Y, no kick), DynamicJump is a player UI toggle (not AC)
    - NO codes feature: 0 working codes exist, no redeem UI in build (verified Sep 2026) ]]
 
+-- 0) Key gate ────────────────────────────────────────────────
+local GetKey = loadstring(game:HttpGet(
+  "https://raw.githubusercontent.com/xyraopsec/speedy-hub/master/WorkInkKey.lua"
+))()
+local _token = GetKey()
+if not _token then return end
+
 local Env = getgenv()
 if type(Env.Library) == "table" then
   if type(Env.Library.Unload) == "function" then
